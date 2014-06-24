@@ -41,10 +41,10 @@
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     return operation;
@@ -62,10 +62,10 @@
         }
     } failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     return operation;
@@ -79,10 +79,10 @@
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"POST" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     return operation;
@@ -97,10 +97,10 @@
     NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:@"POST" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters constructingBodyWithBlock:block error:nil];
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     return operation;
@@ -114,10 +114,10 @@
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"PUT" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     return operation;
@@ -131,10 +131,10 @@
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"PATCH" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     return operation;
@@ -148,10 +148,10 @@
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"DELETE" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
     
-    if(self.asyncwork){
-        [self.operationQueue addOperation:operation];
-    }else{ 
-        [self.operationQueue addOperations:@[operation] waitUntilFinished:YES];
+    [self.operationQueue addOperation:operation];
+    
+    if(!self.asyncwork){
+        [operation waitUntilFinished];
     }
     
     

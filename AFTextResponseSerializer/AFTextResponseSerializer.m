@@ -20,7 +20,7 @@
         return nil;
     }
     
-    self.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"application/json",@"text/xml", @"application/xml", nil];
+    self.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"application/json",@"text/xml", @"application/xml",@"application/x-gzip", nil];
     
     return self;
 }

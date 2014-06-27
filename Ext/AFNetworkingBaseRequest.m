@@ -254,14 +254,19 @@
 
 
 -(AFHTTPResponseSerializer *)getAFHTTPResponseSerializer{
-    
+    AFHTTPResponseSerializer *responseSerializer;
     if(self.responseType==ResponseProtocolTypeNormal){
-        return [AFTextResponseSerializer serializer];
+        responseSerializer= [AFTextResponseSerializer serializer];
     }else if (self.responseType == ResponseProtocolTypeXML){
-        return [AFOnoResponseSerializer XMLResponseSerializer];
+        responseSerializer= [AFOnoResponseSerializer XMLResponseSerializer];
     }
     
-    return [AFJSONResponseSerializer serializer];
+    responseSerializer= [AFJSONResponseSerializer serializer];
+    
+    
+    responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"application/json",@"text/xml", @"application/xml",@"application/x-gzip", nil];
+    
+    return responseSerializer;
 }
 
 -(void)cancel{

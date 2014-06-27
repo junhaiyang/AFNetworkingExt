@@ -276,9 +276,8 @@
 -(BOOL)isCanceled{
     return  [operation isCancelled];
 }
--(BOOL)isHttpSuccess{
-    return YES;
-//   return operation.statusCode == StatusCodeSuccess;
+-(BOOL)isHttpSuccess{ 
+   return operation.statusCode == StatusCodeSuccess;
 }
 
 #pragma mark

@@ -259,9 +259,9 @@
         responseSerializer= [AFTextResponseSerializer serializer];
     }else if (self.responseType == ResponseProtocolTypeXML){
         responseSerializer= [AFOnoResponseSerializer XMLResponseSerializer];
+    }else{ 
+        responseSerializer= [AFJSONResponseSerializer serializer];
     }
-    
-    responseSerializer= [AFJSONResponseSerializer serializer];
     
     
     responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"application/json",@"text/xml", @"application/xml",@"application/x-gzip", nil];

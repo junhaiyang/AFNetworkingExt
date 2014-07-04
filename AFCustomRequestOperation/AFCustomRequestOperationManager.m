@@ -15,6 +15,59 @@
 
 #pragma mark -
 
+- (instancetype)initWithBaseURL:(NSURL *)url {
+    self = [super initWithBaseURL:url];
+    if (!self) {
+        return nil;
+    }
+    
+    [self.requestSerializer setQueryStringSerializationWithBlock:^NSString *(NSURLRequest *request, NSDictionary *parameters, NSError *__autoreleasing *error) {
+        
+        NSMutableString *formString=[[NSMutableString alloc] init];
+        
+        for (NSString *field in parameters) {
+            
+            NSObject *values=[parameters objectForKey:field];
+            
+            if([values isKindOfClass:[NSArray class]]||[values isKindOfClass:[NSSet class]]){
+                
+                for (NSString *value in (NSArray *)values) {
+                    
+                    if (formString.length>1)
+                        [formString appendString:@"&"];
+                    
+                    NSString *fieldValue =  [NSString stringWithFormat:@"%@=%@", [field description],[AFCustomRequestOperationManager encodeURL:[value description]]];
+                    
+                    [formString appendString:fieldValue];
+                }
+                
+            }else{
+                
+                if (formString.length>1)
+                    [formString appendString:@"&"];
+                
+                NSString *fieldValue =  [NSString stringWithFormat:@"%@=%@", [field description],[AFCustomRequestOperationManager encodeURL:[values description]]];
+                
+                [formString appendString:fieldValue];
+            }
+            
+        }
+        
+        return formString;
+    }];
+    
+    return self;
+}
+
++ (NSString*)encodeURL:(NSString *)string
+{
+	NSString *newString =  CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)string, NULL, CFSTR(":/?#[]@!$ &'()*+,;=\"<>%{}|\\^~`"), CFStringConvertNSStringEncodingToEncoding(NSUTF8StringEncoding)));
+	if (newString) {
+		return newString;
+	}
+	return @"";
+}
+
 - (AFHTTPRequestOperation *)HTTPRequestOperationWithRequest:(NSURLRequest *)request
                                                     success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
                                                     failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure

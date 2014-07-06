@@ -63,8 +63,7 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 -(void)downloadBlock:(AFNetworkingDownloadBlock)downloadBlock;
 -(void)uploadBlock:(AFNetworkingUploadBlock)uploadBlock;
 
--(void)executeSync:(NSInteger)queueId;
--(void)executeSyncWithQueueKey:(NSString *)key;
+-(void)executeSync;
 
 -(void)executeAsync:(NSInteger)queueId;
 -(void)executeAsyncWithQueueKey:(NSString *)key;

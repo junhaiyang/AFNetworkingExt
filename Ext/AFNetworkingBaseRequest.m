@@ -44,13 +44,8 @@
 -(void)uploadBlock:(AFNetworkingUploadBlock)uploadBlock{
     self.networkingUploadBlock =uploadBlock;
 }
--(void)executeSync:(NSInteger)queueId{
-    self.managerKey =[NSString stringWithFormat:@"%d-%d-sync",(int)queueId,(int)self.responseType];
-    self.asyncwork  = NO;
-    [self prepareRequest];
-}
--(void)executeSyncWithQueueKey:(NSString *)key{
-    self.managerKey =[NSString stringWithFormat:@"%@-%d-sync",key,(int)self.responseType];
+-(void)executeSync{
+    self.managerKey =[NSString stringWithFormat:@"queue-sync"];
     self.asyncwork  = NO;
     [self prepareRequest];
 }

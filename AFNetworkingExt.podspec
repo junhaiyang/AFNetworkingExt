@@ -50,11 +50,11 @@ Pod::Spec.new do |s|
     		 
   end
   
-  s.dependency 'AFNetworking', '~> 2.3.0'
-  s.dependency 'AFNetworkActivityLogger', '~> 2.0.2'
-  s.dependency 'AFgzipRequestSerializer', '~> 0.0.1'
-  s.dependency 'AFOnoResponseSerializer', '~> 0.0.1'
-  s.dependency 'Godzippa', '~> 1.0.0'
+  s.dependency 'AFNetworking'
+  s.dependency 'AFNetworkActivityLogger'
+  s.dependency 'AFgzipRequestSerializer'
+  s.dependency 'AFOnoResponseSerializer'
+  s.dependency 'Godzippa'
    
  
 end

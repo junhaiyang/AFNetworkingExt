@@ -24,12 +24,15 @@
 
 @implementation AFNetworkingBaseRequest
 
+static int indexNumber =0;
 - (instancetype)init
 {
     self = [super init];
     if (self) { 
         self.responseType = ResponseProtocolTypeJSON;
         self.asyncwork  = NO;
+        indexNumber++;
+        self.requestId=indexNumber;
     }
     return self;
 }
@@ -221,6 +224,7 @@
 }
 
 -(void)processBlock{
+    operation.requestId = self.requestId;
     if(self.networkingDownloadBlock){
         __block AFNetworkingBaseRequest *weakSelf = self;
         

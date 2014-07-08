@@ -9,6 +9,7 @@
 #import "AFNetworkingHttpQueueManager.h"
 #import "AFCustomRequestOperationManager.h"
 #import "AFDownloadRequestOperationManager.h"
+#import "AFCustomRequestOperation.h"
 
 
 
@@ -92,6 +93,37 @@ static NSObject *lock;
     NSString *key=[NSString stringWithFormat:@"%ld",(long)queueId];
     [AFNetworkHttpRequestManager cancelQueueStr:key];
     
+}
+
+
++(void)cancelQueue:(NSInteger)queueId requestId:(NSInteger)requestId{
+    NSString *key=[NSString stringWithFormat:@"%d",queueId];
+    [AFNetworkHttpRequestManager cancelQueueStr:key requestId:requestId];
+}
+
++(void)cancelQueueStr:(NSString *)queueId requestId:(NSInteger)requestId{
+    @synchronized(lock){
+        NSMutableDictionary *queueDictionary=[AFNetworkHttpRequestManager shareManager].queueDictionary;
+        NSString *key=[NSString stringWithFormat:@"%@-",queueId];
+        for (NSString *_key in queueDictionary) {
+            if([_key hasPrefix:key]){
+                NSLog(@"cancelQueue :%@ requestId :%d",_key,requestId);
+                
+                AFCustomRequestOperationManager *manager=[queueDictionary objectForKey:key];
+                
+                NSArray *operations=[manager.operationQueue operations];
+                for (NSOperation *operation in operations) {
+                    if([operation isKindOfClass:[AFCustomRequestOperation class]]){
+                        if (((AFCustomRequestOperation *)operation).requestId==requestId) {
+                            NSLog(@"cancel :%@ requestId :%d",operation,requestId);
+                            [operation cancel];
+                        }
+                    }
+                    
+                }
+            }
+        }
+    }
 }
  
 

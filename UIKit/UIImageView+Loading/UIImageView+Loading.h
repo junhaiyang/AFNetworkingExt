@@ -106,11 +106,9 @@ typedef enum ImageRenderType {
 
 #pragma mark - public loading method
  
-- (NSString *)parseLoadingThumbUrl:(NSURL *)url size:(CGSize)size; 
+- (NSString *)parseLoadingThumbUrl:(NSURL *)url; 
 
 +(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey;
- 
-+(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url size:(CGSize)size;
 
 +(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url;
 

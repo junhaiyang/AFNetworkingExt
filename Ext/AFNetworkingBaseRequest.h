@@ -51,7 +51,7 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 
     AFCustomRequestOperation *operation;
 }
-
+@property (nonatomic,assign) NSInteger requestId;
 @property (nonatomic,strong) NSString *managerKey;
 
 @property (nonatomic,assign) ResponseProtocolType responseType;  //响应协议类型 

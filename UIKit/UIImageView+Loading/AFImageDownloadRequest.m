@@ -38,7 +38,7 @@ static int indexNumber =0;
             NSError *error;
             [manager removeItemAtPath:_filePath error:&error];
             if(error){
-                SB_LOG_ERROR(@"%@",error);
+                NSLog(@"%@",error);
             }
         }
         return;
@@ -48,7 +48,7 @@ static int indexNumber =0;
                 NSError *error;
                 [manager moveItemAtPath:_filePath toPath:self.filePath error:&error];
                 if(error){
-                    SB_LOG_ERROR(@"%@",error);
+                    NSLog(@"%@",error);
                 }
             }
 }

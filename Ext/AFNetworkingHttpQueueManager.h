@@ -22,4 +22,7 @@
 +(void)cancelQueue:(NSInteger)queueId;
 +(void)cancelQueueStr:(NSString *)queueId;
 
++(void)cancelQueue:(NSInteger)queueId requestId:(NSInteger)requestId;
++(void)cancelQueueStr:(NSString *)queueId requestId:(NSInteger)requestId;
+
 @end

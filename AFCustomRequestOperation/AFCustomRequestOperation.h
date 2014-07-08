@@ -10,7 +10,7 @@
 
 @interface AFCustomRequestOperation : AFHTTPRequestOperation
 
-
+@property (nonatomic,assign) NSInteger requestId;
 @property (nonatomic,assign) NSInteger statusCode;
 
 @end

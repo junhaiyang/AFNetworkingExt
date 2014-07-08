@@ -11,7 +11,6 @@
 @interface AFImageDownloadRequest : AFNetworkingBaseRequest{
  NSString *url;
 }
-@property (nonatomic,assign)NSInteger requestId;
 
 @property(nonatomic, strong) NSString *filePath; 
 @property(nonatomic, strong) NSString *url; 

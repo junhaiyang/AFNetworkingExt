@@ -83,3 +83,51 @@
 		...
 	}
 	
+	
+	
+	
+UIImageView+Loading:
+
+使用network
+	
+	
+    self.imageView.defaultLoadingImage = [UIImage imageNamed:@"icon"]; 
+    imageView.loadingImagePathType = @"icon";
+    imageView.loadingImageKeyStr = [NSString stringWithFormat:@"%lld", user.uid];
+    imageView.loadingQueueId = queueId;
+    
+    [imageView loadingAsyncImage:imagePath];
+    //[imageView loadingSyncImage:imagePath];
+    
+    
+ local
+ 
+ 	
+    self.imageView.defaultLoadingImage = [UIImage imageNamed:@"icon"]; 
+    imageView.loadingResourcePath = recourcePath;
+    [imageView loadingSyncLocalImage];
+    //[imageView loadingAsyncLocalImage];
+    
+    
+    
+ cacle loading
+ 
+ 	[self.imageView recycleLoading];
+
+local chache path:    .....APP CACHE DIR/$imagePathType/$imageKey/$urlencoding/iocn.png
+	
+	+(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url;
+    
+ clear local cache path
+   
+  	+(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey;
+  	
+  	
+  	
+ click Control
+ 
+ 	
+    [imageView addClickTarget:self action:@selector(imageClick:)];
+
+    
+  

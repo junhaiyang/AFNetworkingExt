@@ -4,11 +4,8 @@ Pod::Spec.new do |s|
 
   s.name         = "AFNetworkingExt"
   s.version      = "1.0.0"
-  s.summary      = "A short description of AFNetworkingExt."
-
-  s.description  = <<-DESC
-                     AFNetworkingExt
-                   DESC
+  s.summary      = "AFNetworking的封装"
+ 
 
   s.homepage     = "https://github.com/junhaiyang/AFNetworkingExt"
  

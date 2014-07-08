@@ -21,6 +21,17 @@ Pod::Spec.new do |s|
    
   s.source_files = 'Ext/*.{h,m,mm}' 
       
+      
+  s.subspec 'UIKit' do |ks|
+     
+     ks.subspec 'UIImageView+Loading' do |ds|
+    
+     	ds.source_files = 'UIKit/UIImageView+Loading/*.{h,m,mm}' 
+    		 
+  	end
+    		 
+  end
+      
   s.subspec 'AFCustomRequestOperation' do |ds|
     
     ds.source_files = 'AFCustomRequestOperation/*.{h,m,mm}' 

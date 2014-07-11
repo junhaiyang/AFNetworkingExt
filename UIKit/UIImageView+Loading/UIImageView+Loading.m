@@ -985,6 +985,10 @@ static const char *loadingControlKeyKey        ="__loadingControlKeyKey__";
                 if(self.defaultLoadingImage)
                     [self showLoadingImage:nil];
                 
+                if(existed){
+                    [fileManager removeItemAtPath:self.loadingResourcePath error:NULL];
+                }
+                
                 
                 {
                     ImageLoadEntry *entry=[[ImageLoadEntry alloc] init];

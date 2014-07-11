@@ -252,15 +252,15 @@ void dispatch_main_sync_undeadlock_fun(dispatch_block_t block){
 @end
 
 @implementation UIControl(Extras)
-static const char *____idKey                  ="______idKey__";
+static const char *____idKey                     ="______idKey__";
 static const char *____idKeyStr                  ="______idKeyStr__";
 
--(void)setKey:(long)key{
-    objc_setAssociatedObject(self, ____idKey, [NSNumber numberWithLong:key], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setKey:(long long)key{
+    objc_setAssociatedObject(self, ____idKey, [NSNumber numberWithLongLong:key], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(long)key{
+-(long long)key{
     NSNumber *keyValue= objc_getAssociatedObject(self, ____idKey);
-    return [keyValue longValue];
+    return [keyValue longLongValue];
 }
 
 
@@ -445,13 +445,13 @@ static const char *loadingControlKeyKey        ="__loadingControlKeyKey__";
     return objc_getAssociatedObject(self, loadingImageKeyStrKey);
 }
 
--(void)setLoadingImageKey:(long)loadingImageKey{
-    self.loadingImageKeyStr =[NSString stringWithFormat:@"%ld",loadingImageKey];
-    objc_setAssociatedObject(self, loadingImageKeyKey, [NSNumber numberWithLong:loadingImageKey], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setLoadingImageKey:(long long)loadingImageKey{
+    self.loadingImageKeyStr =[NSString stringWithFormat:@"%lld",loadingImageKey];
+    objc_setAssociatedObject(self, loadingImageKeyKey, [NSNumber numberWithLongLong:loadingImageKey], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
--(long)loadingImageKey{
+-(long long)loadingImageKey{
     NSNumber *loadingImageKeyValue= objc_getAssociatedObject(self, loadingImageKeyKey);
-    return [loadingImageKeyValue intValue];
+    return [loadingImageKeyValue longLongValue];
 }
 
 -(void)setLoadingImagePathType:(NSString *)loadingImagePathType{
@@ -499,15 +499,15 @@ static const char *loadingControlKeyKey        ="__loadingControlKeyKey__";
     return objc_getAssociatedObject(self, loadingControlKeyStrKey);
 }
 
--(void)setLoadingControlKey:(long)loadingControlKey{
-    objc_setAssociatedObject(self, loadingControlKeyKey, [NSNumber numberWithLong:loadingControlKey], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+-(void)setLoadingControlKey:(long long)loadingControlKey{
+    objc_setAssociatedObject(self, loadingControlKeyKey, [NSNumber numberWithLongLong:loadingControlKey], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if(self.control){
         self.control.key=loadingControlKey;
     }
 }
--(long)loadingControlKey{
+-(long long)loadingControlKey{
     NSNumber *loadingImageKeyValue= objc_getAssociatedObject(self, loadingControlKeyKey);
-    return [loadingImageKeyValue longValue];
+    return [loadingImageKeyValue longLongValue];
 }
 
 #pragma mark - image path method

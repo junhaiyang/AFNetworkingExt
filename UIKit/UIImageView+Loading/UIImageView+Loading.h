@@ -23,9 +23,9 @@
 
 @interface UIControl(Extras)
 
--(void)setKey:(long)key;                          //图片标号，用于本地保存使用
+-(void)setKey:(long long)key;                          //图片标号，用于本地保存使用
 
--(long)key;
+-(long long)key;
 
 -(void)setKeyStr:(NSString *)keyStr;                          //图片标号，用于本地保存使用
 
@@ -76,9 +76,9 @@ typedef enum ImageRenderType {
 
 -(NSString *)loadingImageKeyStr;
 
--(void)setLoadingImageKey:(long)loadingImageKey;                          //图片标号，用于本地保存使用
+-(void)setLoadingImageKey:(long long)loadingImageKey;                          //图片标号，用于本地保存使用
 
--(long)loadingImageKey;
+-(long long)loadingImageKey;
 
 -(void)setLoadingImagePathType:(NSString *)loadingImagePathType;          //图片分类，用于本地保存使用
 
@@ -100,9 +100,9 @@ typedef enum ImageRenderType {
 
 -(NSString *)loadingControlKeyStr;
 
--(void)setLoadingControlKey:(long)loadingControlKey;                          //图片标号，用于本地保存使用
+-(void)setLoadingControlKey:(long long)loadingControlKey;                          //图片标号，用于本地保存使用
 
--(long)loadingControlKey; 
+-(long long)loadingControlKey;
 
 #pragma mark - public loading method
  

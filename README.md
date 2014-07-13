@@ -86,7 +86,7 @@
 	
 	
 	
-UIImageView+Loading:
+UIImageView+DYLoading:
 
 使用network
 	

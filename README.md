@@ -93,7 +93,7 @@ UIImageView+Loading:
 	
     self.imageView.defaultLoadingImage = [UIImage imageNamed:@"icon"]; 
     imageView.loadingImagePathType = @"icon";
-    imageView.loadingImageKeyStr = [NSString stringWithFormat:@"%lld", user.uid];
+    imageView.loadingImageKey = [NSString stringWithFormat:@"%lld", user.uid];
     imageView.loadingQueueId = queueId;
     
     [imageView loadingAsyncImage:imagePath];
@@ -124,10 +124,5 @@ local chache path:    .....APP CACHE DIR/$imagePathType/$imageKey/$urlencoding/i
   	
   	
   	
- click Control
- 
- 	
-    [imageView addClickTarget:self action:@selector(imageClick:)];
-
     
   

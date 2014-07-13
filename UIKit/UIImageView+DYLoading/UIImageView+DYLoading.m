@@ -1,17 +1,17 @@
 //
-//  UIImageView+CacheLoading.m 
+//  UIImageView+Loading.m 
 //
 //
 
 #import "UIImageView+DYLoading.h"
-#import "MYSCategoryProperties.h"
-#import "AFImageDownloadRequest.h"
+
 #import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
-#import <objc/message.h>
+#import <objc/message.h> 
+#import "AFImageDownloadRequest.h"
+#import "AFNetworkingHttpQueueManager.h"
 
-
-void dispatch_main_sync_undeadlock_imageloading(dispatch_block_t block){
+void dispatch_main_sync_undeadlock_fun(dispatch_block_t block){
     if ([NSThread isMainThread]) {
         block();
     } else {
@@ -20,271 +20,60 @@ void dispatch_main_sync_undeadlock_imageloading(dispatch_block_t block){
 }
 
 
-#pragma mark - UIImageProgressView
+@interface DownloadEntry : NSObject
 
-
-@implementation UIImageProgressView
-
-
-- (UIImageProgressAppearance *)progressAppearance
-{
-    @synchronized(self)
-    {
-        if (_progressAppearance)
-            return _progressAppearance;
-        
-        return [UIImageProgressAppearance sharedProgressAppearance];
-    }
-}
-
-
-#pragma mark - init & dealloc
-
-
-- (id)init
-{
-	return [self initWithFrame:CGRectMake(0.f, 0.f, 37.f, 37.f)];
-}
-
-
-- (id)initWithFrame:(CGRect)frame
-{
-	self = [super initWithFrame:frame];
-	if (self)
-    {
-		self.backgroundColor = [UIColor clearColor];
-		self.opaque = NO;
-		_progress = 0.f;
-		[self registerForKVO];
-	}
-	return self;
-}
-
-
-- (void)dealloc
-{
-	[self unregisterFromKVO];
-}
-
-
-#pragma mark - Drawing
-
-
-- (void)drawRect:(CGRect)rect
-{
-	CGRect allRect = self.bounds;
-	CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    UIImageProgressAppearance *appearance = self.progressAppearance;
-    
-	if (appearance.type == UIImageViewProgressTypeAnnular)
-    {
-		CGFloat lineWidth = 5.f;
-		UIBezierPath *processBackgroundPath = [UIBezierPath bezierPath];
-		processBackgroundPath.lineWidth = lineWidth;
-		processBackgroundPath.lineCapStyle = kCGLineCapRound;
-		CGPoint center = CGPointMake(self.bounds.size.width/2, self.bounds.size.height/2);
-		CGFloat radius = (self.bounds.size.width - lineWidth)/2;
-		CGFloat startAngle = - ((float)M_PI / 2);
-		CGFloat endAngle = (2 * (float)M_PI) + startAngle;
-		[processBackgroundPath addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:YES];
-		[appearance.backgroundTintColor set];
-		[processBackgroundPath stroke];
-        
-		UIBezierPath *processPath = [UIBezierPath bezierPath];
-		processPath.lineCapStyle = kCGLineCapRound;
-		processPath.lineWidth = lineWidth;
-		endAngle = (self.progress * 2 * (float)M_PI) + startAngle;
-		[processPath addArcWithCenter:center radius:radius startAngle:startAngle endAngle:endAngle clockwise:YES];
-		[appearance.progressTintColor set];
-		[processPath stroke];
-        
-        if (appearance.showPercentage)
-            [self drawTextInContext:context];
-    }
-    else if (appearance.type == UIImageViewProgressTypeCircle)
-    {
-        CGColorRef colorBackAlpha = CGColorCreateCopyWithAlpha(appearance.backgroundTintColor. CGColor, 0.05f);
-        CGColorRef colorProgressAlpha = CGColorCreateCopyWithAlpha(appearance.progressTintColor. CGColor, 0.2f);
-        
-        CGRect allRect = rect;
-        CGRect circleRect = CGRectMake(allRect.origin.x + 2, allRect.origin.y + 2, allRect.size.width - 4, allRect.size.height - 4);
-        float x = allRect.origin.x + (allRect.size.width / 2);
-        float y = allRect.origin.y + (allRect.size.height / 2);
-        float angle = (_progress) * 360.0f;
-        
-        CGContextSaveGState(context);
-        CGContextSetStrokeColorWithColor(context, colorProgressAlpha);
-        CGContextSetFillColorWithColor(context, colorBackAlpha);
-        CGContextSetLineWidth(context, 2.0);
-        CGContextFillEllipseInRect(context, circleRect);
-        CGContextStrokeEllipseInRect(context, circleRect);
-        
-        CGContextSetRGBFillColor(context, 1.0, 0.0, 1.0, 1.0);
-        CGContextMoveToPoint(context, x, y);
-        CGContextAddArc(context, x, y, (allRect.size.width + 4) / 2, -M_PI / 2, (angle * M_PI) / 180.0f - M_PI / 2, 0);
-        CGContextClip(context);
-        
-        CGContextSetStrokeColorWithColor(context, appearance.progressTintColor.CGColor);
-        CGContextSetFillColorWithColor(context, appearance.backgroundTintColor.CGColor);
-        CGContextSetLineWidth(context, 2.0);
-        CGContextFillEllipseInRect(context, circleRect);
-        CGContextStrokeEllipseInRect(context, circleRect);
-        CGContextRestoreGState(context);
-        
-        if (appearance.showPercentage)
-            [self drawTextInContext:context];
-	}
-    else
-    {
-        CGRect circleRect = CGRectInset(allRect, 2.0f, 2.0f);
-        
-        CGColorRef colorBackAlpha = CGColorCreateCopyWithAlpha(appearance.backgroundTintColor. CGColor, 0.1f);
-        
-		[appearance.progressTintColor setStroke];
-        CGContextSetFillColorWithColor(context, colorBackAlpha);
-        
-		CGContextSetLineWidth(context, 2.0f);
-		CGContextFillEllipseInRect(context, circleRect);
-		CGContextStrokeEllipseInRect(context, circleRect);
-        
-		CGPoint center = CGPointMake(allRect.size.width / 2, allRect.size.height / 2);
-		CGFloat radius = (allRect.size.width - 4) / 2 - 3;
-		CGFloat startAngle = - ((float)M_PI / 2);
-		CGFloat endAngle = (self.progress * 2 * (float)M_PI) + startAngle;
-		[appearance.progressTintColor setFill];
-		CGContextMoveToPoint(context, center.x, center.y);
-		CGContextAddArc(context, center.x, center.y, radius, startAngle, endAngle, 0);
-		CGContextClosePath(context);
-		CGContextFillPath(context);
-    }
-}
-
-
-- (void)drawTextInContext:(CGContextRef)context
-{
-    UIImageProgressAppearance *appearance = self.progressAppearance;
-    
-    CGRect allRect = self.bounds;
-    
-    UIFont *font = appearance.percentageTextFont;
-    NSString *text = [NSString stringWithFormat:@"%i%%", (int)(_progress * 100.0f)];
-    
-    CGSize textSize = [text sizeWithFont:font constrainedToSize:CGSizeMake(30000, 13)];
-    
-    float x = floorf(allRect.size.width / 2) + 3 + appearance.percentageTextOffset.x;
-    float y = floorf(allRect.size.height / 2) - 6 + appearance.percentageTextOffset.y;
-    
-    CGContextSetFillColorWithColor(context, appearance.percentageTextColor.CGColor);
-    [text drawAtPoint:CGPointMake(x - textSize.width / 2.0, y) withFont:font];
-}
-
-
-#pragma mark - KVO
-
-
-- (void)registerForKVO
-{
-	for (NSString *keyPath in [self observableKeypaths])
-    {
-		[self addObserver:self forKeyPath:keyPath options:NSKeyValueObservingOptionNew context:NULL];
-	}
-}
-
-
-- (void)unregisterFromKVO
-{
-	for (NSString *keyPath in [self observableKeypaths])
-    {
-		[self removeObserver:self forKeyPath:keyPath];
-	}
-}
-
-
-- (NSArray *)observableKeypaths
-{
-	return [NSArray arrayWithObjects:@"progressAppearance", @"progress", nil];
-}
-
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-	[self setNeedsDisplay];
-}
-
-
-#pragma mark -
-
+@property (nonatomic,assign) NSInteger queueID;
+@property (nonatomic,strong) NSString *URL;
+@property (nonatomic,strong) NSString *resourcePath;
+@property (nonatomic,strong) NSString *cacheKey;
 
 @end
 
-
-@implementation UIImageProgressAppearance
-
-
-static UIImageProgressAppearance *sharedProgressAppearanceInstance = nil;
-
-
-+ (UIImageProgressAppearance *)sharedProgressAppearance
-{
-    @synchronized(self)
-    {
-        if (sharedProgressAppearanceInstance)
-            return sharedProgressAppearanceInstance;
-        
-        return sharedProgressAppearanceInstance = [UIImageProgressAppearance new];
-    }
-}
-
-
-#pragma mark - init
-
-
-- (id)init
-{
-    self = [super init];
-    if (self)
-    {
-        self.schemeColor = [UIColor whiteColor];
-        _percentageTextFont = [UIFont systemFontOfSize:10];
-        _percentageTextOffset = CGPointZero;
-        _type = 0;
-        _showPercentage = YES;
-    }
-    return self;
-}
-
-
-#pragma mark - Setters
-
-
-- (void)setSchemeColor:(UIColor *)schemeColor
-{
-    _schemeColor = schemeColor;
-    
-    _progressTintColor = [UIColor colorWithCGColor:CGColorCreateCopyWithAlpha(schemeColor.CGColor, 1)];
-    _backgroundTintColor = [UIColor colorWithCGColor:CGColorCreateCopyWithAlpha(schemeColor.CGColor, 0.1)];
-    _percentageTextColor = [UIColor colorWithCGColor:CGColorCreateCopyWithAlpha(schemeColor.CGColor, 1)];
-}
-
-
-#pragma mark -
-
-
-@end
-
-#pragma mark - UIImageLoadData
-
-@interface UIImageLoadData : NSObject
+@interface ImageLoadData : NSObject
 
 @property (nonatomic,assign) NSInteger requestID;
 @property(nonatomic,strong) NSMutableSet *imageSet;
 
 @end
 
-@implementation UIImageLoadData
+@interface ImageLoadEntry : NSObject
+@property (nonatomic,strong) NSString *url;    //标识
+@property (nonatomic,weak) id  target;         //回调目标
+@property (nonatomic,assign) SEL  success;        //成功回调
+@property (nonatomic,assign) SEL  error;          //失败回调
+@property (nonatomic,assign) SEL  cancel;         //取消回调
+@property (nonatomic,strong) UIImageView *imageView;  //绘制界面的view
 
-- (instancetype)init
+@end
+
+@interface ImageLoadManager : NSObject
+
++ (ImageLoadEntry *)findEntry:(NSString *)key imageView:(UIImageView *)imageView;
+
+
++ (void)addRequestID:(NSInteger)requestID key:(NSString *)key;
+
++ (void)addEntry:(ImageLoadEntry *)entry;
++ (void)removeEntry:(NSString *)key entry:(ImageLoadEntry *)entry;
+
++ (NSMutableSet *)findAllEntry:(NSString *)key;
++ (void)removeAllEntry:(NSString *)key;
+
++ (BOOL)isDownloading:(NSString *)key;
++ (void)addDownload:(NSString *)key;
++ (void)removeDownload:(NSString *)key;
+
+@end
+
+
+@implementation DownloadEntry
+
+
+@end
+@implementation ImageLoadData
+
+
+- (id)init
 {
     self = [super init];
     if (self) {
@@ -293,68 +82,446 @@ static UIImageProgressAppearance *sharedProgressAppearanceInstance = nil;
     return self;
 }
 
--(void)dealloc{
-    [self.imageSet removeAllObjects];
-    self.imageSet = nil;
-}
+@end
+
+@implementation ImageLoadEntry
 
 @end
 
-#pragma mark - UIImageLoadManager
 
-@interface UIImageLoadManager : NSObject
-
-
-@property (nonatomic,strong) dispatch_queue_t imageLoadingQueue;
-
-@property (nonatomic,strong) dispatch_queue_t imageProcessQueue;
-
-
+@interface ImageLoadManager()
 
 @property (nonatomic,strong) NSMutableDictionary *poolDictionary;
- 
+@property (nonatomic,strong) NSMutableSet *downloadSet;
+@property (nonatomic,strong) NSObject *lock;
 
++(ImageLoadManager *)shareInstance;
 
 @end
 
-@implementation UIImageLoadManager
-
-static NSLock *lock;
-#pragma mark - initial
-- (instancetype)init
+@implementation ImageLoadManager
+@synthesize poolDictionary;
+static NSObject *lock;
+- (id)init
 {
     self = [super init];
     if (self) {
-        self.imageLoadingQueue = dispatch_queue_create("UIImageLoadManager_imageLoadingQueue", DISPATCH_QUEUE_SERIAL);
-        self.imageProcessQueue = dispatch_queue_create("UIImageLoadManager_imageProcessQueue", DISPATCH_QUEUE_SERIAL);
-        
-        self.poolDictionary =[[NSMutableDictionary  alloc] init];
-        
-        lock =[[NSLock  alloc] init];
+        self.poolDictionary=[[NSMutableDictionary alloc] init];
+        self.downloadSet =[[NSMutableSet alloc] init];
+        lock =[[NSObject alloc] init];
     }
     return self;
 }
 
-+ (NSCache *)sharedImageCache {
-    static NSCache *defaultImageCache = nil;
-    static dispatch_once_t oncePredicate;
-    dispatch_once(&oncePredicate, ^{
-        defaultImageCache = [[NSCache alloc] init];
-        
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidReceiveMemoryWarningNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * __unused notification) {
-            [defaultImageCache removeAllObjects];
-        }];
++(ImageLoadManager *)shareInstance{
+    static ImageLoadManager *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[ImageLoadManager alloc] init];
     });
-    
-    return  defaultImageCache;
-    
+    return sharedInstance;
 }
 
++ (ImageLoadEntry *)findEntry:(NSString *)key imageView:(UIView *)imageView{
+    @synchronized(lock){
+        ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+        ImageLoadData *data=[imageLoadManager.poolDictionary objectForKey:key];
+        for (ImageLoadEntry *entry in data.imageSet) {
+            if([entry.imageView isEqual:imageView]){
+                return entry;
+            }
+        }
+    }
+    return  nil;
+}
+
++ (void)addEntry:(ImageLoadEntry *)entry{
+    @synchronized(lock){
+        ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+        ImageLoadData *data=[imageLoadManager.poolDictionary objectForKey:entry.url];
+        if(data==nil){
+            data = [[ImageLoadData alloc] init];
+            [imageLoadManager.poolDictionary setObject:data forKey:entry.url];
+        }
+        [data.imageSet addObject:entry];
+    }
+}
+
++ (void)addRequestID:(NSInteger)requestID key:(NSString *)key{
+    @synchronized(lock){
+        ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+        ImageLoadData *data= [imageLoadManager.poolDictionary objectForKey:key];
+        data.requestID=requestID;
+    }
+}
+
++ (void)removeEntry:(NSString *)key entry:(ImageLoadEntry *)entry{
+    @synchronized(lock){
+        
+        ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+        ImageLoadData *data= [imageLoadManager.poolDictionary objectForKey:key];
+        NSInteger queueID =entry.imageView.loadingQueueId;
+        NSInteger requestID =data.requestID;
+        [data.imageSet removeObject:entry];
+        
+        if(data.imageSet.count==0){
+            [AFNetworkHttpRequestManager cancelQueue:queueID requestId:requestID];
+        }
+    }
+}
+
++ (NSMutableSet *)findAllEntry:(NSString *)key{
+    NSMutableSet *imageSet;
+    @synchronized(lock){
+        ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+        ImageLoadData *data= [imageLoadManager.poolDictionary objectForKey:key];
+        imageSet= data.imageSet;
+    }
+    return imageSet;
+}
+
++ (void)removeAllEntry:(NSString *)key{
+    ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+    [imageLoadManager.poolDictionary removeObjectForKey:key];
+}
+
++ (BOOL)isDownloading:(NSString *)key{
+    ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+    return [imageLoadManager.downloadSet containsObject:key];
+}
++ (void)addDownload:(NSString *)key{
+    ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+    [imageLoadManager.downloadSet addObject:key];
+}
++ (void)removeDownload:(NSString *)key{
+    ImageLoadManager *imageLoadManager=[ImageLoadManager shareInstance];
+    [imageLoadManager.downloadSet removeObject:key];
+}
+
+
+@end
+
+@implementation UIImage (UIImageScaleClip)
+ 
+- (UIImage *)rescaleImageToSize:(CGSize)size {
+	CGRect rect = CGRectMake(0.0, 0.0, size.width, size.height);
+	UIGraphicsBeginImageContext(rect.size);
+	[self drawInRect:rect];  // scales image to rect
+	UIImage *resImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	return resImage;
+}
+
+-(UIImage *)scaleImageToSize:(CGSize)size{
+    
+    CGFloat sourceWidth  = self.size.width;
+    CGFloat sourceHeight = self.size.height;
+    
+    CGFloat viewWidth  = size.width;
+    CGFloat viewHeight = size.height;
+    
+    CGFloat outWidth  = viewWidth;
+    CGFloat outHeight = viewHeight;
+    
+    CGFloat widthFactor = sourceWidth / viewWidth;
+    CGFloat heightFactor = sourceHeight / viewHeight;
+    
+    CGFloat scaleFactor = widthFactor>heightFactor?widthFactor:heightFactor;
+    outWidth =  sourceWidth / scaleFactor;
+    outHeight =  sourceHeight / scaleFactor;
+    
+    CGRect rect = CGRectMake(0.0, 0.0, outWidth, outHeight);
+    
+	UIGraphicsBeginImageContext(rect.size);
+    
+	[self drawInRect:rect];
+    
+	UIImage *_image = UIGraphicsGetImageFromCurrentImageContext();
+    
+	UIGraphicsEndImageContext();
+ 
+    return _image;
+}
+
+- (UIImage *)clipImageToSize:(CGSize)size scale:(BOOL)scale{
+    CGFloat sourceWidth  = self.size.width;
+    CGFloat sourceHeight = self.size.height;
+    
+    CGFloat viewWidth  = size.width;
+    CGFloat viewHeight = size.height;
+    
+    CGFloat outWidth  = viewWidth;
+    CGFloat outHeight = viewHeight;
+    
+    CGFloat widthFactor = sourceWidth / viewWidth;
+    CGFloat heightFactor = sourceHeight / viewHeight;
+    
+    CGFloat scaleFactor = widthFactor<heightFactor?widthFactor:heightFactor;
+    
+    outWidth  =  viewWidth * scaleFactor;
+    outHeight =  viewHeight * scaleFactor;
+    
+    CGRect rect = CGRectMake((sourceWidth -outWidth )/2, (sourceHeight -outHeight )/2, outWidth,outHeight);
+    
+    UIGraphicsBeginImageContext(rect.size);
+    
+    CGContextRef currentContext = UIGraphicsGetCurrentContext();//获取当前quartz 2d绘图环境
+    
+    CGContextTranslateCTM(currentContext, 0-rect.origin.x,sourceHeight-rect.origin.y);
+    CGContextScaleCTM(currentContext, 1.0, -1.0);
+    
+    CGContextClipToRect( currentContext, rect);//设置当前绘图环境到矩形框
+    
+    CGRect _rect = CGRectMake(0.0, 0.0f, sourceWidth,sourceHeight);
+    
+    CGContextDrawImage(currentContext, _rect, self.CGImage);//绘图
+    
+    UIImage *_clipImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    UIImage *_image;
+    
+    if(scale){
+        CGRect srect = CGRectMake(0.0, 0.0, viewWidth, viewHeight);
+        UIGraphicsBeginImageContext(srect.size);
+        [_clipImage drawInRect:srect];
+        _image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+    }else{
+        _image=_clipImage;
+    }
+    
+     return [_image fixOrientation:self.imageOrientation];
+}
+
+-(UIImage *)fixOrientation:(UIImageOrientation)_imageOrientation{
+    
+    // No-op if the orientation is already correct
+    if (_imageOrientation == UIImageOrientationUp) return self;
+    
+    // We need to calculate the proper transformation to make the image upright.
+    // We do it in 2 steps: Rotate if Left/Right/Down, and then flip if Mirrored.
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    switch (_imageOrientation) {
+        case UIImageOrientationDown:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, self.size.width, self.size.height);
+            transform = CGAffineTransformRotate(transform, M_PI);
+            break;
+            
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+            transform = CGAffineTransformTranslate(transform, self.size.width, 0);
+            transform = CGAffineTransformRotate(transform, M_PI_2);
+            break;
+            
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, 0, self.size.height);
+            transform = CGAffineTransformRotate(transform, -M_PI_2);
+            break;
+        default:
+            break;
+    }
+    
+    switch (_imageOrientation) {
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, self.size.width, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+            
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, self.size.height, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+        default:
+            break;
+    }
+    
+    // Now we draw the underlying CGImage into a new context, applying the transform
+    // calculated above.
+    CGContextRef ctx = CGBitmapContextCreate(NULL, self.size.width, self.size.height,
+                                             CGImageGetBitsPerComponent(self.CGImage), 0,
+                                             CGImageGetColorSpace(self.CGImage),
+                                             CGImageGetBitmapInfo(self.CGImage));
+    CGContextConcatCTM(ctx, transform);
+    switch (_imageOrientation) {
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            // Grr...
+            CGContextDrawImage(ctx, CGRectMake(0,0,self.size.height,self.size.width), self.CGImage);
+            break;
+            
+        default:
+            CGContextDrawImage(ctx, CGRectMake(0,0,self.size.width,self.size.height), self.CGImage);
+            break;
+    }
+    
+    // And now we just create a new UIImage from the drawing context
+    CGImageRef cgimg = CGBitmapContextCreateImage(ctx);
+    UIImage *img = [UIImage imageWithCGImage:cgimg];
+    CGContextRelease(ctx);
+    CGImageRelease(cgimg);
+    return img;
+}
+
+-(UIImage *)cornerImageToRadius:(int)radius margin:(int)margin marginColor:(UIColor *)clolor{
+    
+    CGFloat viewWidth  = self.size.width;
+    CGFloat viewHeight = self.size.height;
+    
+    CGRect rect = CGRectMake(0, 0, viewWidth,viewHeight);
+    
+    UIGraphicsBeginImageContext(rect.size);
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    
+    CGRect rectToDraw = CGRectInset(rect, 0, 0);
+    
+    UIBezierPath *borderPath = [UIBezierPath bezierPathWithRoundedRect:rectToDraw byRoundingCorners:(UIRectCorner)UIRectCornerAllCorners cornerRadii:CGSizeMake(radius, radius)];
+    
+    /* Background */
+    CGContextSaveGState(ctx);
+    {
+        CGContextAddPath(ctx, borderPath.CGPath);
+        
+        CGContextSetFillColorWithColor(ctx, clolor.CGColor);
+        
+        CGContextDrawPath(ctx, kCGPathFill);
+    }
+    CGContextRestoreGState(ctx);
+    {
+        
+        CGRect _rect=CGRectMake(rect.origin.x+margin, rect.origin.y+margin, rect.size.width-2*margin, rect.size.height-2*margin);
+        CGRect rectToDraw = CGRectInset(_rect, margin, margin);
+        
+        UIBezierPath *iconPath = [UIBezierPath bezierPathWithRoundedRect:rectToDraw byRoundingCorners:(UIRectCorner)UIRectCornerAllCorners cornerRadii:CGSizeMake(radius, radius)];
+        
+        /* Image and Clip */
+        CGContextSaveGState(ctx);
+        {
+            CGContextAddPath(ctx, iconPath.CGPath);
+            CGContextClip(ctx);
+            
+            CGContextTranslateCTM(ctx, 0.0, self.size.height);
+            CGContextScaleCTM(ctx, 1.0, -1.0);
+            
+            CGContextDrawImage(ctx, _rect, self.CGImage);
+            
+        }
+        
+    }
+    
+    UIImage *_clipImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    
+    
+    return _clipImage;
+}
+ 
+ 
+@end
+
+@implementation UIControl(Extras)
+static const char *____idKey                     ="______idKey__";
+static const char *____idKeyStr                  ="______idKeyStr__";
+
+-(void)setKey:(long long)key{
+    objc_setAssociatedObject(self, ____idKey, [NSNumber numberWithLongLong:key], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(long long)key{
+    NSNumber *keyValue= objc_getAssociatedObject(self, ____idKey);
+    return [keyValue longLongValue];
+}
+
+
+-(void)setKeyStr:(NSString *)keyStr{
+    objc_setAssociatedObject(self, ____idKeyStr, keyStr, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)keyStr{
+    return objc_getAssociatedObject(self, ____idKeyStr);
+}
+
+@end
+
+  
+@implementation UIImageView (Loading)
+
+
+
+
+#pragma mark - static thread
++ (NSThread *)imageProcessThread
+{
+    static NSThread *processThread = nil;
+    static dispatch_once_t processToken;
+    
+    dispatch_once(&processToken, ^{
+        processThread = [[NSThread alloc] initWithTarget:self selector:@selector(runThreads) object:nil];
+        [processThread start];
+    });
+    
+    return processThread;
+}
+
++ (void)runThreads
+{
+	// Should keep the runloop from exiting
+	CFRunLoopSourceContext context = {0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+	CFRunLoopSourceRef source = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &context);
+	CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+    
+    BOOL runAlways = YES; // Introduced to cheat Static Analyzer
+	while (runAlways) {
+        @autoreleasepool {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e10, true);
+        }
+	}
+    
+	// Should never be called, but anyway
+	CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+	CFRelease(source);
+}
+
++ (NSThread *)imageLoadingThread{
+    static NSThread *loadingThread = nil;
+    static dispatch_once_t loadingToken;
+    
+    dispatch_once(&loadingToken, ^{
+        loadingThread = [[NSThread alloc] initWithTarget:self selector:@selector(runThreads) object:nil];
+        [loadingThread start];
+    });
+    
+    return loadingThread;
+}
+
+static NSObject *lock;
++ (NSCache *)defaultCache
+{
+    static NSCache *sharedInstance = nil;
+    
+    static dispatch_once_t cacheToken;
+    
+    dispatch_once(&cacheToken, ^{
+		sharedInstance = [[NSCache alloc] init];
+        lock =[[NSObject alloc] init];
+    });
+	return sharedInstance;
+}
 + (UIImage *)loadImage:(NSString *)rootKey secondKey:(NSString *)secondKey
 {
     UIImage *image = nil;
     @synchronized(lock){
-        NSDictionary *dictionary=[[UIImageLoadManager sharedImageCache] objectForKey:rootKey];
+        NSDictionary *dictionary=[[[self class] defaultCache] objectForKey:rootKey];
         if(dictionary){
             image = [dictionary objectForKey:secondKey];
         }
@@ -364,398 +531,167 @@ static NSLock *lock;
 + (void)loadImage:(NSString *)rootKey secondKey:(NSString *)secondKey image:(UIImage *)image
 {
     @synchronized(lock){
-        NSMutableDictionary *dictionary=[[UIImageLoadManager sharedImageCache] objectForKey:rootKey];
+        NSMutableDictionary *dictionary=[[[self class] defaultCache] objectForKey:rootKey];
         if(!dictionary){
             dictionary =[[NSMutableDictionary alloc] init];
             [dictionary setObject:image forKey:secondKey];
-            [[UIImageLoadManager sharedImageCache] setObject:dictionary forKey:rootKey];
+            [[[self class] defaultCache] setObject:dictionary forKey:rootKey];
         }else{
             [dictionary setObject:image forKey:secondKey];
         }
     }
 }
 
-+(UIImageLoadManager *)shareInstance{
-    static UIImageLoadManager *sharedInstance = nil;
-    static dispatch_once_t onceToken;
-    
-    dispatch_once(&onceToken, ^{
-        sharedInstance = [[UIImageLoadManager alloc] init];
-    });
-    return sharedInstance;
+#pragma mark - setter/getter method
+
+static const char *defaultLoadingImageKey      ="__defaultLoadingImage__";
+static const char *loadingQueueIdKey           ="__loadingQueueId__";
+static const char *imageShowSizeTypeKey        ="__imageShowSizeType__";
+static const char *loadingCacheKeyKey          ="__loadingCacheKey__";
+static const char *loadingResourcePathKey      ="__loadingResourcePath__";
+static const char *loadingImageUrlKey          ="__loadingImageUrl__";
+static const char *loadingImageKeyStrKey       ="__loadingImageKeyStr__";
+static const char *loadingImageKeyKey          ="__loadingImageKeyKey__";
+static const char *loadingImagePathTypeKey     ="__loadingImagePathType__";
+static const char *useLoadingDefaultImageKey   ="__useLoadingDefaultImageKey__";
+static const char *loadingAnimationKey         ="__loadingAnimationKey__";
+static const char *controlKey                  ="__controlKey__";
+static const char *loadingControlKeyStrKey     ="__loadingControlKeyStrKey__";
+static const char *loadingControlKeyKey        ="__loadingControlKeyKey__";
+
+
+
+
+-(void)setDefaultLoadingImage:(UIImage *)defaultLoadingImage{
+    objc_setAssociatedObject(self, defaultLoadingImageKey, defaultLoadingImage, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(UIImage *)defaultLoadingImage{
+    return objc_getAssociatedObject(self, defaultLoadingImageKey);
+}
+
+-(void)setLoadingQueueId:(NSInteger)loadingQueueId{
+    objc_setAssociatedObject(self, loadingQueueIdKey, [NSNumber numberWithInt:loadingQueueId], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSInteger)loadingQueueId{
+    NSNumber *loadingQueueIdValue= objc_getAssociatedObject(self, loadingQueueIdKey);
+    return [loadingQueueIdValue intValue];
 }
 
 
-#pragma mark - static Medthd
+-(void)setImageRenderType:(ImageRenderType)imageRenderType{
+    objc_setAssociatedObject(self, imageShowSizeTypeKey, [NSNumber numberWithInt:imageRenderType], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+-(NSInteger)imageRenderType{
+    
+    NSNumber *imageShowSizeTypeValue=objc_getAssociatedObject(self, imageShowSizeTypeKey);
+    switch ([imageShowSizeTypeValue intValue]) {
+        case  1:
+            return ImageRenderOriginal;
+            break;
+        default:
+            return ImageRenderThumbnail;
+            break;
+            
+    }
+    return ImageRenderThumbnail;
+}
+
+-(void)setLoadingCacheKey:(NSString *)loadingCacheKey{
+    objc_setAssociatedObject(self, loadingCacheKeyKey, loadingCacheKey, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)loadingCacheKey{
+    return objc_getAssociatedObject(self, loadingCacheKeyKey);
+}
+
+-(void)setLoadingResourcePath:(NSString *)loadingResourcePath{
+    objc_setAssociatedObject(self, loadingResourcePathKey, loadingResourcePath, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)loadingResourcePath{
+    return objc_getAssociatedObject(self, loadingResourcePathKey);
+}
+
+-(void)setLoadingImageUrl:(NSString *)loadingImageUrl{
+    objc_setAssociatedObject(self, loadingImageUrlKey, loadingImageUrl, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)loadingImageUrl{
+    return objc_getAssociatedObject(self, loadingImageUrlKey);
+}
+
+-(void)setLoadingImageKeyStr:(NSString *)loadingImageKeyStr{
+    objc_setAssociatedObject(self, loadingImageKeyStrKey, loadingImageKeyStr, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)loadingImageKeyStr{
+    return objc_getAssociatedObject(self, loadingImageKeyStrKey);
+}
+
+-(void)setLoadingImageKey:(long long)loadingImageKey{
+    self.loadingImageKeyStr =[NSString stringWithFormat:@"%lld",loadingImageKey];
+    objc_setAssociatedObject(self, loadingImageKeyKey, [NSNumber numberWithLongLong:loadingImageKey], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(long long)loadingImageKey{
+    NSNumber *loadingImageKeyValue= objc_getAssociatedObject(self, loadingImageKeyKey);
+    return [loadingImageKeyValue longLongValue];
+}
+
+-(void)setLoadingImagePathType:(NSString *)loadingImagePathType{
+    objc_setAssociatedObject(self, loadingImagePathTypeKey, loadingImagePathType, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)loadingImagePathType{
+    return objc_getAssociatedObject(self, loadingImagePathTypeKey);
+}
 
 
-+(void)addLoadingImageView:(UIImageView *)imageView key:(NSString *)key{
-    @synchronized(lock){
-        UIImageLoadData *data=[[UIImageLoadManager shareInstance].poolDictionary objectForKey:key];
-        
-        if(data==nil){
-        
-            data =[[UIImageLoadData  alloc] init];
-            [[UIImageLoadManager shareInstance].poolDictionary setObject:data forKey:key];
-        }
-        [data.imageSet addObject:imageView];
-        
+-(void)setUseLoadingDefaultImage:(BOOL)useLoadingDefaultImage{
+    objc_setAssociatedObject(self, useLoadingDefaultImageKey, [NSNumber numberWithBool:useLoadingDefaultImage], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(BOOL)useLoadingDefaultImage{
+    NSNumber *useLoadingDefaultImageValue= objc_getAssociatedObject(self, useLoadingDefaultImageKey);
+    return [useLoadingDefaultImageValue boolValue];
+}
+
+-(void)setLoadingAnimation:(BOOL)loadingAnimation{
+    objc_setAssociatedObject(self, loadingAnimationKey, [NSNumber numberWithBool:loadingAnimation], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(BOOL)loadingAnimation{
+    NSNumber *loadingAnimationValue= objc_getAssociatedObject(self, loadingAnimationKey);
+    return [loadingAnimationValue boolValue];
+    
+}
+-(void)setControl:(UIControl *)control{
+    objc_setAssociatedObject(self, controlKey, control, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+-(UIControl *)control{
+    return objc_getAssociatedObject(self, controlKey);
+}
+
+
+
+
+-(void)setLoadingControlKeyStr:(NSString *)loadingControlKeyStr{
+    objc_setAssociatedObject(self, loadingControlKeyStrKey, loadingControlKeyStr, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if(self.control){
+        self.control.keyStr=loadingControlKeyStr;
     }
 }
+-(NSString *)loadingControlKeyStr{
+    return objc_getAssociatedObject(self, loadingControlKeyStrKey);
+}
 
-
-
-+ (void)addLoadingRequestId:(NSInteger)requestId key:(NSString *)key{
-    @synchronized(lock){
-        UIImageLoadData *data=[[UIImageLoadManager shareInstance].poolDictionary objectForKey:key];
-        
-        if(data!=nil){
-            data.requestID =requestId;
-        }
-        
+-(void)setLoadingControlKey:(long long)loadingControlKey{
+    objc_setAssociatedObject(self, loadingControlKeyKey, [NSNumber numberWithLongLong:loadingControlKey], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if(self.control){
+        self.control.key=loadingControlKey;
     }
 }
-
-+(void)removeLoadingImageView:(UIImageView *)imageView key:(NSString *)key{
-    @synchronized(lock){
-        UIImageLoadData *data=[[UIImageLoadManager shareInstance].poolDictionary objectForKey:key];
-        
-        if(data!=nil){
-            NSInteger queueID =imageView.loadingQueueId;
-            
-            [data.imageSet removeObject:imageView];
-            
-            if(data.imageSet.count==0){
-                [AFNetworkHttpRequestManager cancelQueue:queueID requestId:data.requestID];
-                
-                [[UIImageLoadManager shareInstance].poolDictionary removeObjectForKey:key];
-            }
-        }
-        
-    }
+-(long long)loadingControlKey{
+    NSNumber *loadingImageKeyValue= objc_getAssociatedObject(self, loadingControlKeyKey);
+    return [loadingImageKeyValue longLongValue];
 }
-
-+ (NSMutableSet *)findAllEntry:(NSString *)key{
-    NSMutableSet *imageSet;
-    @synchronized(lock){
-        UIImageLoadData *data=[[UIImageLoadManager shareInstance].poolDictionary objectForKey:key];
-        imageSet = [[NSMutableSet alloc] initWithSet:data.imageSet];
-    }
-    
-    return imageSet;
-}
-
-
-+ (BOOL)isDownloading:(NSString *)key{
-    BOOL  result = NO;
-    @synchronized(lock){
-        result=([[UIImageLoadManager shareInstance].poolDictionary objectForKey:key]!=nil);
-    }
-    
-    return result;
-}
-+ (void)addDownload:(NSString *)key{
-    @synchronized(lock){
-        UIImageLoadData *data=[[UIImageLoadManager shareInstance].poolDictionary objectForKey:key];
-        
-        if(data==nil){
-            
-            data =[[UIImageLoadData  alloc] init];
-            [[UIImageLoadManager shareInstance].poolDictionary setObject:data forKey:key];
-        }
-        
-    }
-    
-}
-+ (void)removeDownload:(NSString *)key queueId:(NSInteger)queueId{
-    @synchronized(lock){
-        UIImageLoadData *data=[[UIImageLoadManager shareInstance].poolDictionary objectForKey:key];
-        
-        if(data==nil){
-            
-            [data.imageSet removeAllObjects];
-            
-            [AFNetworkHttpRequestManager cancelQueue:queueId requestId:data.requestID];
-            
-            [[UIImageLoadManager shareInstance].poolDictionary removeObjectForKey:key];
-            
-        }
-        
-    }
-}
-
-#pragma mark - image method
-
-+(UIImage *)processImage:(UIImage *)image{
-    CGRect rect = CGRectMake(0.0, 0.0, image.size.width, image.size.height);
-	UIGraphicsBeginImageContext(rect.size);
-	[image drawInRect:rect];  // scales image to rect
-	UIImage *resImage = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
-	return resImage;
-}
-
-
-+(void)processDownloadImage:(NSString *)URL filePath:(NSString *)filePath queueId:(NSInteger)queueId{
-    
-    __block NSString  *_filePath =filePath;
-    
-    dispatch_async([UIImageLoadManager shareInstance].imageProcessQueue, ^{
-        @autoreleasepool {
-            @try {
-                
-                NSMutableSet *entrys= [UIImageLoadManager findAllEntry:_filePath];
-                
-                UIImage *image =[UIImage imageWithContentsOfFile:_filePath];
-               __block UIImage *showImage = [UIImageLoadManager processImage:image];
-                
-                
-                for (UIImageView *imageView in entrys) {
-                    
-                    if(showImage&&imageView.imageRenderType==UIImageViewRenderThumbnail){
-                        
-                        [UIImageLoadManager loadImage:imageView.loadingCacheKey secondKey:_filePath image:showImage];
-                    }
-                    __weak UIImageView *blockImageView =imageView;
-                    dispatch_main_sync_undeadlock_imageloading(^{
-                        blockImageView.loadingAnimation = YES;
-                        [blockImageView showLoadingImage:showImage];
-                    });
-                    
-                    [blockImageView imageSelSelecer];
-                }
-                
-                
-            }
-            @catch (NSException *exception) {
-#if DEBUG
-                NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
-#endif
-            }@finally {
-                [UIImageLoadManager removeDownload:_filePath queueId:queueId];
-            }
-        }
-    });
-
-}
-#pragma mark - download method
-
-+(void)startLoadingImage:(UIImageView *)imageView urlRequest:(NSString *)URL filePath:(NSString *)filePath{
-     
-    __block NSInteger queueId =imageView.loadingQueueId;
-    __block NSString  *_URL =URL;
-    __block NSString  *_filePath =filePath;
-    
-    if([UIImageLoadManager isDownloading:_filePath]){
-        
-        [UIImageLoadManager addLoadingImageView:imageView key:filePath];
-        
-        return;
-    }
-    [UIImageLoadManager addLoadingImageView:imageView key:_filePath];
-    
-    dispatch_async([UIImageLoadManager shareInstance].imageLoadingQueue, ^{
-        
-        
-        AFImageDownloadRequest *downloadRequest=[[AFImageDownloadRequest alloc] initWithURL:_URL];
-        downloadRequest.filePath=_filePath;
-        
-#if DEBUG
-        NSLog(@"url requestId:%d imageUrl:%@",downloadRequest.requestId,_URL);
-        
-#endif
-        
-        [UIImageLoadManager addLoadingRequestId:downloadRequest.requestId key:_filePath];
-        
-        [downloadRequest downloadBlock:^(long long totalBytesRead, long long totalBytesExpectedToRead) {
-            
-            CGFloat progress = (totalBytesRead*1.0f)/ (totalBytesExpectedToRead*1.0f);
-            
-            NSMutableSet *images = [UIImageLoadManager findAllEntry:_filePath];
-            
-            for (UIImageView *imageView in images) {
-                [imageView setProgress:progress];
-            }
-            
-            NSLog(@"------%f",progress);
-        }];
-        
-        [downloadRequest completionBlock:^(AFNetworkingBaseRequest *request, NSInteger statusCode) {
-            
-            @try {
-                if(statusCode==200){
-                    
-                    
-                    [UIImageLoadManager processDownloadImage:_URL filePath:_filePath queueId:queueId];
-                    
-                }
-                else if(statusCode == 404){
-#if DEBUG
-                    NSLog(@"404:%@",_filePath);
-#endif
-                }
-            }@catch (NSException *exception) {
-                [UIImageLoadManager removeDownload:_filePath queueId:queueId];
-#if DEBUG
-                NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
-#endif
-            }
-        }];
-        
-        [downloadRequest executeAsync:queueId];
-        
-        
-    });
-    
-}
-
-
--(void)processLocalImage:(UIImageView *)imageView{
-    
-    
-    __block UIImageView *blockImageView =imageView;
-    dispatch_async([UIImageLoadManager shareInstance].imageProcessQueue, ^{
-        @autoreleasepool {
-            @try {
-                if(blockImageView.imageRenderType==UIImageViewRenderThumbnail){
-                     UIImage *image = [UIImageLoadManager loadImage:blockImageView.loadingCacheKey secondKey:blockImageView.loadingResourcePath];
-                    if(image){
-                        dispatch_main_sync_undeadlock_imageloading(^{
-                            [blockImageView showLoadingImage:image];
-                        });
-                        
-                        [blockImageView imageSelSelecer];
-                        
-                        return;
-                    }
-                }
-                
-                UIImage *image=[UIImage imageWithContentsOfFile:blockImageView.loadingResourcePath];
-                __block UIImage *showImage = [UIImageLoadManager processImage:image];
-                
-                
-                dispatch_main_sync_undeadlock_imageloading(^{
-                    [blockImageView showLoadingImage:showImage];
-                    
-                });
-                
-                [blockImageView imageSelSelecer];
-            }
-            @catch (NSException *exception) {
-#if DEBUG
-                NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
-#endif
-            }
-        }
-    });
-                   
-}
-
-@end
-
-#pragma mark - UIImageView (DYLoading)
-
-@implementation UIImageView (DYLoading)
-
-@dynamic progressView;
-@dynamic progressAppearance;
-
-@dynamic target;
-@dynamic sel;
-
-
-
-@dynamic defaultLoadingImage;
-@dynamic useLoadingDefaultImage;
-
-@dynamic loadingImageUrl;
-
-
-@dynamic loadingResourcePath;
-@dynamic loadingImagePathType;
-@dynamic loadingImageKey;
-@dynamic loadingCacheKey;
-
-@dynamic loadingAnimation;
-@dynamic loadingprogressAnimation;
-
-@dynamic loadingQueueId;
-
-@dynamic imageRenderType;
-
-
-+ (void)load
-{
-    [MYSCategoryProperties setup:self];
-}
--(void)dealloc{
-    
-    [self freeProgressView];
-}
-
-
-
-#pragma mark - layoutSubviews
-
-
-- (void)layoutSubviews
-{
-    self.progressView.frame = CGRectMake(floorf(self.frame.size.width/2 - self.progressView.frame.size.width/2), floorf(self.frame.size.height/2 - self.progressView.frame.size.height/2), self.progressView.frame.size.width, self.progressView.frame.size.height);
-}
-
-
-- (void)loadProgressView
-{
-    [self freeProgressView];
-    
-    self.progressView = [[UIImageProgressView alloc] initWithFrame:CGRectMake(0, 0, 37, 37)];
-    
-    if (self.progressAppearance)
-        self.progressView.progressAppearance = self.progressAppearance;
-    
-    
-    [self addSubview:self.progressView];
-}
-
-#pragma mark - ASIProgressDelegate
-
-
-- (void)setProgress:(float)newProgress
-{
-    if (self.progressView)
-    {
-        dispatch_main_sync_undeadlock_imageloading(^{
-            self.progressView.progress = newProgress;
-        });
-    }
-}
-
-
-#pragma mark - Free
-
-
-
-
-- (void)freeProgressView
-{
-    if (self.progressView)
-    {
-        dispatch_main_sync_undeadlock_imageloading(^{
-            if (self.progressView.superview)
-                [self.progressView removeFromSuperview];
-        });
-        
-        self.progressView = nil;
-    }
-}
-
 
 #pragma mark - image path method
 + (NSString *)getFilename:(NSURL *)url {
-    
-    if(!url)
-        return nil;
-    
     const char *cStr = [[url absoluteString] UTF8String];
     
     unsigned char result[16];
@@ -793,20 +729,18 @@ static NSLock *lock;
         [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:self.loadingImageKey];
+    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:self.loadingImageKeyStr];
     if(![fileManager fileExistsAtPath:imageDirPath isDirectory:nil]){
         [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
     NSString *className=[[self class] getFilename:url];
-    if(className==nil)
-        className =@"icon";
     
     NSString *dirPath=[imageDirPath stringByAppendingPathComponent:className];
     
     return  [self parseLoadingImagePath:dirPath];
 }
-
+  
 -(NSString *)parseLoadingImagePath:(NSString *)imagePath{
     
     NSMutableString *filePath=[[NSMutableString alloc] init];
@@ -820,8 +754,30 @@ static NSLock *lock;
 }
 
 
-#pragma mark - public loading method
+#pragma mark - private loading method
 
+-(void)dealloc{
+    //    LOG_DEBUG(@"-------------------dealloc--------------");
+    //remove self from manager
+    if(self.control){
+        [self.control removeFromSuperview];
+    }
+    
+    objc_removeAssociatedObjects(self);
+    if (self.loadingImageUrl) {
+        ImageLoadEntry *entry=[ImageLoadManager findEntry:self.loadingImageUrl imageView:self];
+        entry.imageView = NULL;
+        entry.target = NULL;
+        entry.success = NULL;
+        entry.url = NULL;
+        [ImageLoadManager removeEntry:self.loadingImageUrl entry:entry];
+    }
+}
+
+
+
+#pragma mark - public loading method
+ 
 +(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey{
     NSString *content=[[self class] getThumbPath];
     
@@ -842,14 +798,14 @@ static NSLock *lock;
     
     NSString *cacheKey = [NSString stringWithFormat:@"%@--%@",imagePathType,imageKey];
     
-    [[UIImageLoadManager sharedImageCache] removeObjectForKey:cacheKey];
+    [[[self class] defaultCache] removeObjectForKey:cacheKey];
 }
 + (void)clearPath:(NSString *)perfix {
     
     [UIImageView clearDir:perfix];
 }
 
-+ (void)clearDir:(NSString *)path {
++ (void)clearDir:(NSString *)path { 
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL _isDir;
     if ([fileManager fileExistsAtPath:path isDirectory:&_isDir]) {
@@ -892,8 +848,6 @@ static NSLock *lock;
         [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     NSString *className=[[self class] getFilename:url];
-    if(className==nil)
-        className =@"icon";
     
     NSString *dirPath=[imageDirPath stringByAppendingPathComponent:className];
     
@@ -908,9 +862,39 @@ static NSLock *lock;
     return filePath;
 }
 
+- (void)addClickTarget:(id)target action:(SEL)action{
+    UIControl *_control=self.control;
+    if(!_control){ 
+        self.userInteractionEnabled =YES;
+        _control=[[UIControl alloc] initWithFrame:self.bounds];
+        _control.autoresizingMask=UIViewAutoresizingFlexibleHeight|UIViewAutoresizingFlexibleWidth;
+        _control.key=self.loadingControlKey;
+        _control.keyStr=self.loadingControlKeyStr;
+        [self addSubview:_control];
+        [_control sendSubviewToBack:self];
+        self.control =_control;
+        [_control addTarget:self action:@selector(imageDown:) forControlEvents:UIControlEventTouchDown];
+        [_control addTarget:self action:@selector(imageUp:) forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchCancel|UIControlEventTouchUpOutside|UIControlEventTouchDragOutside];
+    }else{
+        [_control removeTarget:target action:@selector(action) forControlEvents:UIControlEventTouchUpInside];
+    }
+    [_control addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+}
 
-#pragma mark - self method
+- (void)removeClickTarget:(id)target action:(SEL)action{
+    UIControl *_control=self.control;
+    [_control removeTarget:self action:@selector(imageDown:) forControlEvents:UIControlEventTouchDown];
+    [_control removeTarget:self action:@selector(imageUp:) forControlEvents:UIControlEventTouchUpInside|UIControlEventTouchCancel|UIControlEventTouchUpOutside|UIControlEventTouchDragOutside];
+    [_control removeTarget:target action:@selector(action) forControlEvents:UIControlEventTouchUpInside];
 
+}
+ 
+-(void)imageUp:(UIControl *)control{
+    control.backgroundColor =[UIColor clearColor];
+}
+-(void)imageDown:(UIControl *)control{
+    control.backgroundColor =[[UIColor blackColor] colorWithAlphaComponent:0.4f];
+}
 
 +(void)cancelImageLoadingQueue:(NSInteger)hashCode{
     [AFNetworkHttpRequestManager cancelQueue:hashCode];
@@ -921,12 +905,10 @@ static NSLock *lock;
     //TODO 设置内部取消状态
     [self.layer removeAllAnimations];
     
-    self.loadingprogressAnimation = NO;
-    
-    [self freeProgressView];
-    
-    if (self.loadingResourcePath) { 
-            [UIImageLoadManager removeLoadingImageView:self key:self.loadingResourcePath];
+    if (self.loadingResourcePath) {
+        ImageLoadEntry *entry=[ImageLoadManager findEntry:self.loadingResourcePath imageView:self];
+        if(entry)
+            [ImageLoadManager removeEntry:self.loadingResourcePath entry:entry];
     }
     
     self.loadingResourcePath = nil;
@@ -952,60 +934,116 @@ static NSLock *lock;
     }
 }
 
-#pragma mark - public loading method
-
-
--(void)imageSelSelecer{
-    
-    [self freeProgressView];
-    SEL aSelector = NSSelectorFromString(self.sel);
-    
-    if(self.target){
-        if([self.target respondsToSelector:aSelector]){
+-(void)processLocalImage:(ImageLoadEntry *)entry{
+    @autoreleasepool {
+        @try {
+            if(self.imageRenderType==ImageRenderThumbnail){
+                UIImage *image = [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
+                if(image){
+                    dispatch_main_sync_undeadlock_fun(^{
+                        [self showLoadingImage:image];
+                    });
+                    
+                    if(entry.target){
+                        if([entry.target respondsToSelector:entry.success]){
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-            [self.target performSelector:aSelector withObject:self];
+                            [entry.target performSelector:entry.success];
 #pragma clang diagnostic pop
+                        }
+                    }
+                    return;
+                }
+            }
+            
+            
+            //            NSTimeInterval create= CFAbsoluteTimeGetCurrent();
+            UIImage *image=[UIImage imageWithContentsOfFile:self.loadingResourcePath];
+            __block UIImage *showImage=[self processImage:image];
+            
+            {
+                if(showImage&&self.imageRenderType==ImageRenderThumbnail){
+                    [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath image:showImage]; 
+                }
+                
+            }
+            
+            //            NSLog(@"----------  process Time:%f   --------",CFAbsoluteTimeGetCurrent()-create);
+            dispatch_main_sync_undeadlock_fun(^{
+                [self showLoadingImage:showImage];
+                //                NSLog(@"----------  show Time:%f   --------",CFAbsoluteTimeGetCurrent()-create);
+            });
+        }
+        @catch (NSException *exception) {
+#if DEBUG
+            NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
+#endif
         }
     }
 }
 
 
 -(void)loadingAsyncLocalImage{
+    if(self.imageRenderType==ImageRenderThumbnail){
+        NSString *_imageType=self.loadingImagePathType;
+        NSString *_imageKeyStr=self.loadingImageKeyStr;
+        
+        if(_imageType&&_imageKeyStr){
+            self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",_imageType,_imageKeyStr];
+        }else{
+            if(!_imageType)
+                _imageType =@"NULL";
+            
+            if(!_imageKeyStr)
+                _imageKeyStr =@"NULL";
+            
+            NSException *e = [[NSException alloc] initWithName:nil reason:nil userInfo:nil];
+            @throw e;
+            
+        }
+    }
     
     [self.layer removeAllAnimations];
     self.loadingAnimation  = NO;
     
     [self showLoadingImage:nil];
     
-    [[UIImageLoadManager shareInstance] processLocalImage:self ];
+    
+    ImageLoadEntry *entry=[[ImageLoadEntry alloc] init];
+    entry.url=self.loadingResourcePath;
+    entry.success=NULL;
+    entry.imageView=self;
+    entry.target=NULL;
+    [self performSelector:@selector(processLocalImage:) onThread:[[self class] imageProcessThread] withObject:entry waitUntilDone:NO];
 }
 -(void)loadingSyncLocalImage{
     UIImage *image;
     
-    NSString *_imageType=self.loadingImagePathType;
-    NSString *_imageKeyStr=self.loadingImageKey;
-    
-    if(_imageType&&_imageKeyStr){ ;
-    }else{
+    if(self.imageRenderType==ImageRenderThumbnail){
+        NSString *_imageType=self.loadingImagePathType;
+        NSString *_imageKeyStr=self.loadingImageKeyStr;
         
-        self.loadingImagePathType =@"image";
-        self.loadingImageKey =@"default";
-        
-    }
-    
-    self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",self.loadingImagePathType,self.loadingImageKey];
-    
-    if(self.imageRenderType==UIImageViewRenderThumbnail){
-        image = [UIImageLoadManager loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
+        if(_imageType&&_imageKeyStr){
+            self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",_imageType,_imageKeyStr];
+        }else{
+            if(!_imageType)
+                _imageType =@"NULL";
+            
+            if(!_imageKeyStr)
+                _imageKeyStr =@"NULL";
+            
+            NSException *e = [[NSException alloc] initWithName:nil reason:nil userInfo:nil];
+            @throw e;
+            
+        }
+        image = [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
     }
     
     
     if(!image){
         image=[UIImage imageWithContentsOfFile:self.loadingResourcePath];
-        if(image&&self.imageRenderType==UIImageViewRenderThumbnail){
-            
-            [UIImageLoadManager loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath image:image];
+        if(image&&self.imageRenderType==ImageRenderThumbnail){
+            [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath image:image];
         }
     }
     if(image){
@@ -1015,41 +1053,33 @@ static NSLock *lock;
 
 
 -(void)loadingAsyncImage:(NSString *)imageUrl{
-    [self loadImage:imageUrl  fourceSync:NO];
+    [self loadImage:imageUrl doneSelector:NULL withTarget:NULL fourceSync:NO];
 }
 -(void)loadingAsyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target{
-    self.target =target;
-    self.sel = NSStringFromSelector(aSelector);
-    
-    [self loadImage:imageUrl   fourceSync:NO];
+    [self loadImage:imageUrl doneSelector:aSelector withTarget:target fourceSync:NO];
 }
 
 -(void)loadingSyncImage:(NSString *)imageUrl{
-    [self loadImage:imageUrl  fourceSync:YES];
+    [self loadImage:imageUrl doneSelector:NULL withTarget:NULL fourceSync:YES];
 }
 -(void)loadingSyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target{
-    self.target =target;
-    
-   
-    self.sel = NSStringFromSelector(aSelector);
-    
-    
-    [self loadImage:imageUrl fourceSync:YES];
+    [self loadImage:imageUrl doneSelector:aSelector withTarget:target fourceSync:YES];
 }
 
-- (void)loadImage:(NSString *)imageUrl fourceSync:(BOOL)fourceSync{
+- (void)loadImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target fourceSync:(BOOL)fourceSync{
     
     if (imageUrl == nil) {
         self.loadingAnimation = NO;
         [self showLoadingImage:nil];
         return;
     }
-
+    
     
     @autoreleasepool {
         @try {
             self.loadingAnimation = NO;
-            [self.layer removeAllAnimations]; 
+            [self.layer removeAllAnimations];
+            //            LOG_DEBUG(@"url:%@",imageUrl);
             
             NSURL *url=[NSURL URLWithString:imageUrl];
             if(url==nil){
@@ -1063,60 +1093,73 @@ static NSLock *lock;
             //TODO 设置内部处理中状态
             
             self.loadingImageUrl =imageUrl;
-            
+             
             NSString *_imageType=self.loadingImagePathType;
-            NSString *_imageKeyStr=self.loadingImageKey;
+            NSString *_imageKeyStr=self.loadingImageKeyStr;
             
             if(_imageType&&_imageKeyStr){
                 self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",_imageType,_imageKeyStr];
                 
                 self.loadingResourcePath=[self parseLoadingThumbUrl:[NSURL URLWithString:imageUrl]];
             }else{
+                if(!_imageType)
+                    _imageType =@"NULL";
                 
-                self.loadingImagePathType =@"image";
-                self.loadingImageKey =@"default";
-                self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",self.loadingImagePathType,self.loadingImageKey];
+                if(!_imageKeyStr)
+                    _imageKeyStr =@"NULL";
                 
-                self.loadingResourcePath=[self parseLoadingThumbUrl:[NSURL URLWithString:imageUrl]];
+                NSException *e = [[NSException alloc] initWithName:nil reason:nil userInfo:nil];
+                @throw e;
                 
             }
             UIImage *image;
             
-            if(self.imageRenderType==UIImageViewRenderThumbnail){
+            if(self.imageRenderType==ImageRenderThumbnail){
                 
-                image = [UIImageLoadManager loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
+                image = [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
                 if(image){
                     [self showLoadingImage:image];
                     
-                    [self imageSelSelecer];
+                    if(target){
+                        if([target respondsToSelector:aSelector]){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                            [target performSelector:aSelector];
+#pragma clang diagnostic pop
+                        }
+                    }
                     return;
                 }
             }
             
             NSFileManager *fileManager = [NSFileManager defaultManager];
-            
-            [fileManager removeItemAtPath:self.loadingResourcePath error:NULL];
-            
-            
-            
             BOOL existed = [fileManager fileExistsAtPath:self.loadingResourcePath];
             image=[UIImage imageWithContentsOfFile:self.loadingResourcePath];
             if (existed&&image) {
-                if(fourceSync){
-                    if(image&&self.imageRenderType==UIImageViewRenderThumbnail){
-                        
-                        [UIImageLoadManager loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath image:image];
+                if(fourceSync){ 
+                    if(image&&self.imageRenderType==ImageRenderThumbnail){
+                        [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath image:image]; 
                     }
                     
                     [self showLoadingImage:image];
-
-                    [self imageSelSelecer];
+                    if(target){
+                        if([target respondsToSelector:aSelector]){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                            [target performSelector:aSelector];
+#pragma clang diagnostic pop
+                        }
+                    }
                 }else{
                     if(self.defaultLoadingImage)
                         [self showLoadingImage:nil];
-                     
-                    [[UIImageLoadManager shareInstance] processLocalImage:self ];
                     
+                    ImageLoadEntry *entry=[[ImageLoadEntry alloc] init];
+                    entry.url=self.loadingResourcePath;
+                    entry.success=aSelector;
+                    entry.imageView=self;
+                    entry.target=target;
+                    [self performSelector:@selector(processLocalImage:) onThread:[[self class] imageProcessThread] withObject:entry waitUntilDone:NO];
                 }
             }else{
                 if(self.defaultLoadingImage)
@@ -1125,16 +1168,30 @@ static NSLock *lock;
                 if(existed){
                     [fileManager removeItemAtPath:self.loadingResourcePath error:NULL];
                 }
-                if(self.loadingprogressAnimation){
                 
-                    self.progressAppearance =  [UIImageProgressAppearance sharedProgressAppearance];
-                    self.progressAppearance.type = UIImageViewProgressTypeCircle;
                 
-                    [self loadProgressView];
+                {
+                    ImageLoadEntry *entry=[[ImageLoadEntry alloc] init];
+                    entry.url=self.loadingResourcePath;
+                    entry.success=aSelector;
+                    entry.imageView=self;
+                    entry.target=target;
+                    [ImageLoadManager addEntry:entry];
                 }
                 
-                [UIImageLoadManager startLoadingImage:self urlRequest:self.loadingImageUrl filePath:self.loadingResourcePath];
+                if([ImageLoadManager isDownloading:self.loadingResourcePath])
+                    return;
                 
+                [ImageLoadManager addDownload:self.loadingResourcePath];
+                
+                {
+                    DownloadEntry *entry=[[DownloadEntry alloc] init];
+                    entry.queueID=self.loadingQueueId;
+                    entry.resourcePath=self.loadingResourcePath;
+                    entry.cacheKey=self.loadingCacheKey;
+                    entry.URL=self.loadingImageUrl;
+                    [self performSelector:@selector(loadingImage:) onThread:[[self class] imageLoadingThread] withObject:entry waitUntilDone:NO];
+                }
             }
         }
         @catch (NSException *exception) {
@@ -1145,6 +1202,121 @@ static NSLock *lock;
     }
     
 }
+-(UIImage *)processImage:(UIImage *)image{
+    CGRect rect = CGRectMake(0.0, 0.0, image.size.width, image.size.height);
+	UIGraphicsBeginImageContext(rect.size);
+	[image drawInRect:rect];  // scales image to rect
+	UIImage *resImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	return resImage;
+}
+
+#pragma mark - other thread
+
+
+-(void)processLoadingImage:(DownloadEntry *)entry{
+    @autoreleasepool {
+        @try {
+            
+            NSMutableSet *entrys= [ImageLoadManager findAllEntry:entry.resourcePath];
+            
+            UIImage *showImage;
+            if(self.imageRenderType==ImageRenderThumbnail){
+                showImage = [[self class] loadImage:entry.cacheKey secondKey:entry.resourcePath];
+            }
+            UIImage *image = nil;
+            if(!showImage){
+                image=[UIImage imageWithContentsOfFile:entry.resourcePath];
+            }
+            
+            for (ImageLoadEntry *imageEntry in entrys) {
+                
+                if(!showImage){
+                    showImage=[imageEntry.imageView processImage:image];
+                    if(showImage&&self.imageRenderType==ImageRenderThumbnail){
+                        [[self class] loadImage:entry.cacheKey secondKey:entry.resourcePath image:showImage];
+                    }
+                }
+                
+                dispatch_main_sync_undeadlock_fun(^{
+                    imageEntry.imageView.loadingAnimation = YES;
+                    [imageEntry.imageView showLoadingImage:showImage];
+                });
+                
+                if(imageEntry.target){
+                    if([imageEntry.target respondsToSelector:imageEntry.success]){
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                        [imageEntry.target performSelector:imageEntry.success];
+#pragma clang diagnostic pop
+                    }
+                }
+                
+                imageEntry.imageView = NULL;
+                imageEntry.target = NULL;
+                imageEntry.success = NULL;
+                imageEntry.url = NULL;
+            }
+        }
+        @catch (NSException *exception) {
+#if DEBUG
+            NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
+#endif
+        }@finally {
+            [ImageLoadManager removeAllEntry:entry.resourcePath];
+        }
+    }
+}
+
+-(void)loadingImage:(DownloadEntry *)entry{
+    @autoreleasepool {
+        @try {
+            AFImageDownloadRequest *downloadRequest=[[AFImageDownloadRequest alloc] initWithURL:entry.URL];
+            downloadRequest.filePath=entry.resourcePath;
+            
+#if DEBUG
+            NSLog(@"url requestId:%d imageUrl:%@",downloadRequest.requestId,entry.URL);
+           
+#endif
+            
+            [ImageLoadManager addRequestID:downloadRequest.requestId key:entry.resourcePath];
+            
+            //            LOG_DEBUG(@"-----self:%@ ",self);
+            
+            [downloadRequest completionBlock:^(AFNetworkingBaseRequest *request, NSInteger statusCode) {
+                
+                @try {
+                    if(statusCode==200){
+                        //                        LOG_DEBUG(@"resourcePath:%@",entry.resourcePath);
+                        [self performSelector:@selector(processLoadingImage:) onThread:[UIImageView imageProcessThread] withObject:entry waitUntilDone:NO];
+                    }
+                    else if(statusCode == 404){
+#if DEBUG
+                        NSLog(@"404:%@",entry.resourcePath);
+#endif
+                    }
+                }@catch (NSException *exception) {
+#if DEBUG
+                    NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
+#endif
+                }@finally {
+                    [ImageLoadManager removeDownload:entry.resourcePath];
+                }
+            }];
+            
+            [downloadRequest executeAsync:entry.queueID];
+            
+        }@catch (NSException *exception) {
+#if DEBUG
+            NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
+#endif
+            [ImageLoadManager removeDownload:entry.resourcePath];
+        }
+    }
+}
+ 
+
+
 
 
 @end

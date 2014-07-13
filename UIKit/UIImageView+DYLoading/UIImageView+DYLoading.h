@@ -1,109 +1,120 @@
 //
-//  UIImageView+CacheLoading.h 
+//  UIImageView+Loading.h
+//  Gallery
+//
+//  Created by junhai on 12-12-31.
+//
 //
 
 #import <UIKit/UIKit.h>
 
-typedef NS_ENUM(NSInteger, UIImageViewRenderType){
-	UIImageViewRenderThumbnail = 0,   //缩略图
-	UIImageViewRenderOriginal = 1,     //原图
-} ;
+@interface UIImage (UIImageScaleClip)
+ 
+- (UIImage *)rescaleImageToSize:(CGSize)size;                   //图片大小重定义
 
-typedef NS_ENUM(NSInteger, UIImageViewProgressType)
-{
-    UIImageViewProgressTypeAnnular,
-    UIImageViewProgressTypeCircle = 1,
-    UIImageViewProgressTypePie = 2
-};
+- (UIImage *)clipImageToSize:(CGSize)size scale:(BOOL)scale;    //图片裁剪并且缩放
 
-@class UIImageProgressAppearance;
+- (UIImage *)cornerImageToRadius:(int)radius margin:(int)margin marginColor:(UIColor *)clolor; //图片圆角、边框
 
-@interface  UIImageProgressView : UIView
+- (UIImage *)scaleImageToSize:(CGSize)size;                     //图片等比例缩放 
+
+@end
 
 
-@property (assign, nonatomic) float progress;
-@property (strong, nonatomic) UIImageProgressAppearance *progressAppearance;
+@interface UIControl(Extras)
+
+-(void)setKey:(long long)key;                          //图片标号，用于本地保存使用
+
+-(long long)key;
+
+-(void)setKeyStr:(NSString *)keyStr;                          //图片标号，用于本地保存使用
+
+-(NSString *)keyStr;
 
 
 @end
 
 
-@interface  UIImageProgressAppearance : NSObject
+typedef enum ImageRenderType {
+	ImageRenderThumbnail = 0,   //缩略图
+	ImageRenderOriginal = 1,     //原图
+} ImageRenderType;
 
+@interface UIImageView (Loading)
 
-@property (assign, nonatomic) UIImageViewProgressType type;
++ (NSThread *)imageProcessThread;
 
-@property (assign, nonatomic) BOOL showPercentage;
++ (NSThread *)imageLoadingThread;
 
++(void)cancelImageLoadingQueue:(NSInteger)hashCode;              //取消图片下载 
 
-@property (strong, nonatomic) UIColor *schemeColor;
-@property (strong, nonatomic) UIColor *progressTintColor;
-@property (strong, nonatomic) UIColor *backgroundTintColor;
-@property (strong, nonatomic) UIColor *percentageTextColor;
+-(void)setDefaultLoadingImage:(UIImage *)defaultLoadingImage;             //默认图片
 
-@property (strong, nonatomic) UIFont *percentageTextFont;
-@property (assign, nonatomic) CGPoint percentageTextOffset;
+-(UIImage *)defaultLoadingImage;
 
+-(void)setLoadingQueueId:(NSInteger)loadingQueueId;                       //图片下载时队列编号
 
-+ (UIImageProgressAppearance *)sharedProgressAppearance;
+-(NSInteger)loadingQueueId;
 
+-(void)setImageRenderType:(ImageRenderType)imageRenderType;         //图片是否为原图
 
-@end
+-(NSInteger)imageRenderType;
 
+-(void)setLoadingCacheKey:(NSString *)loadingCacheKey;            //下载地址对应在本地的图片
 
+-(NSString *)loadingCacheKey;
 
-@interface UIImageView (DYLoading)
+-(void)setLoadingResourcePath:(NSString *)loadingResourcePath;            //下载地址对应在本地的图片
 
-@property (nonatomic,strong) UIImageProgressView *progressView;
-@property (strong, nonatomic) UIImageProgressAppearance *progressAppearance;
+-(NSString *)loadingResourcePath;
 
-#pragma mark - delegate
+-(void)setLoadingImageUrl:(NSString *)loadingImageUrl;          //图片分类，用于本地保存使用
 
-@property (nonatomic,weak) id  target;         //回调目标
-@property (nonatomic,strong) NSString  *sel;        //成功回调
+-(NSString *)loadingImageUrl;
 
+-(void)setLoadingImageKeyStr:(NSString *)loadingImageKeyStr;              //图片标号，用于本地保存使用
 
-- (void)setProgress:(float)newProgress;
+-(NSString *)loadingImageKeyStr;
 
-#pragma mark - property
+-(void)setLoadingImageKey:(long long)loadingImageKey;                          //图片标号，用于本地保存使用
 
+-(long long)loadingImageKey;
 
-@property (nonatomic,strong) UIImage *defaultLoadingImage;
+-(void)setLoadingImagePathType:(NSString *)loadingImagePathType;          //图片分类，用于本地保存使用
 
-@property (nonatomic,assign) BOOL  useLoadingDefaultImage;
+-(NSString *)loadingImagePathType;
 
-@property (nonatomic,strong) NSString *loadingImageUrl; //本地原始地址
+-(void)setUseLoadingDefaultImage:(BOOL)useLoadingDefaultImage;            //是否使用了默认图片
 
+-(BOOL)useLoadingDefaultImage;
 
-@property (nonatomic,strong) NSString *loadingResourcePath; //本地缓存文件地址
+-(void)setLoadingAnimation:(BOOL)loadingAnimation;                            //异步处理
 
-@property (nonatomic,strong) NSString *loadingImagePathType; //图片分类，用于本地保存使用
+-(BOOL)loadingAnimation;
 
-@property (nonatomic,strong) NSString *loadingImageKey; //图片标号，用于本地保存使用
+-(void)setControl:(UIControl *)control;
 
-@property (nonatomic,strong) NSString *loadingCacheKey; //图片标号，用于本地保存使用
+-(UIControl *)control;
 
-@property (nonatomic,assign) BOOL loadingprogressAnimation; //图片动画状态
+-(void)setLoadingControlKeyStr:(NSString *)loadingControlKeyStr;              //图片标号，用于本地保存使用
 
+-(NSString *)loadingControlKeyStr;
 
-@property (nonatomic,assign) BOOL loadingAnimation; //图片动画状态
+-(void)setLoadingControlKey:(long long)loadingControlKey;                          //图片标号，用于本地保存使用
 
-@property (nonatomic,assign) NSInteger loadingQueueId; //图片下在队列
+-(long long)loadingControlKey;
 
-
-@property (nonatomic,assign) UIImageViewRenderType imageRenderType; //图片是否为原图
-
-#pragma mark - Instance Method
-
-+(void)cancelImageLoadingQueue:(NSInteger)hashCode;              //取消图片下载
+#pragma mark - public loading method
+ 
+- (NSString *)parseLoadingThumbUrl:(NSURL *)url; 
 
 +(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey;
 
 +(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url;
 
+- (void)addClickTarget:(id)target action:(SEL)action;
 
-#pragma mark - public loading method
-
+- (void)removeClickTarget:(id)target action:(SEL)action;
 
 -(void)showLoadingImage:(UIImage *)image;                          //设置显示图片，image为空时会显示默认图片
 
@@ -121,7 +132,9 @@ typedef NS_ENUM(NSInteger, UIImageViewProgressType)
 
 -(void)loadingSyncImage:(NSString *)_imageUrl doneSelector:(SEL)aSelector withTarget:(id)target;
 
--(void)imageSelSelecer; 
-
-
 @end
+
+
+
+
+

@@ -3,8 +3,8 @@ Pod::Spec.new do |s|
  
 
   s.name         = "AFNetworking+Ext"
-  s.version      = "0.3"
-  s.summary      = "AFNetworking的封装, 并提供一个 UIImageView+Loading  cache in fileSystem"
+  s.version      = "0.4"
+  s.summary      = "AFNetworking的封装, 并提供一个 UIImageView+DYLoading  cache in fileSystem"
  
 
   s.homepage     = "https://github.com/junhaiyang/AFNetworkingExt"
@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = "6.0" 
 
  
-  s.source = { :git => 'https://github.com/junhaiyang/AFNetworkingExt.git' , :tag => '0.3'} 
+  s.source = { :git => 'https://github.com/junhaiyang/AFNetworkingExt.git' , :tag => '0.4'} 
  
   s.requires_arc = true
   
@@ -65,12 +65,13 @@ Pod::Spec.new do |s|
      
      	ds.dependency 'AFNetworking+Ext/AFDownloadRequestOperation'
         ds.dependency 'AFNetworking+Ext/Base'
+        ds.dependency 'MYSCategoryProperties'
     
      	ds.source_files = 'UIKit/UIImageView+DYLoading/*.{h,m,mm}' 
     		 
   	end
     		 
-  end
+  end 
   
   s.dependency 'AFNetworking'
   s.dependency 'AFNetworkActivityLogger'

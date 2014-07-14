@@ -86,7 +86,7 @@
 	
 	
 	
-UIImageView+DYLoading:
+UIImageView+DYLoading:缓存图片到本地文件系统，并且出现相同下载地址时会自动忽略并在原来请求成功后绘制所有相同图片地址的view
 
 使用network
 	

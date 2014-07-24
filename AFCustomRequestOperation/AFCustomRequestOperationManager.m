@@ -9,6 +9,16 @@
 #import "AFCustomRequestOperationManager.h"
 #import "AFCustomRequestOperation.h"
 
+static dispatch_queue_t request_operation_completion_queue() {
+    static dispatch_queue_t af_url_request_operation_completion_queue;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        af_url_request_operation_completion_queue = dispatch_queue_create("com.soooner.networking.operation.queue", DISPATCH_QUEUE_CONCURRENT );
+    });
+    
+    return af_url_request_operation_completion_queue;
+}
+
 @implementation AFCustomRequestOperationManager
 
 @synthesize asyncwork;
@@ -78,6 +88,9 @@
     operation.credential = self.credential;
     operation.securityPolicy = self.securityPolicy;
     
+    if(!self.asyncwork)
+        operation.completionQueue = request_operation_completion_queue();
+    
     [operation setCompletionBlockWithSuccess:success failure:failure];
     
     return operation;
@@ -92,12 +105,35 @@
                         failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"GET" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
-    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        dispatch_semaphore_signal(sem);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        dispatch_semaphore_signal(sem);
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     return operation;
@@ -109,16 +145,33 @@
                          failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"HEAD" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
     AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *requestOperation, __unused id responseObject) {
         if (success) {
             success(requestOperation);
+            
         }
-    } failure:failure];
+        dispatch_semaphore_signal(sem);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        dispatch_semaphore_signal(sem);
+        
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     return operation;
@@ -130,12 +183,38 @@
                          failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"POST" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
-    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     return operation;
@@ -148,12 +227,37 @@
                          failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer multipartFormRequestWithMethod:@"POST" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters constructingBodyWithBlock:block error:nil];
-    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     return operation;
@@ -165,12 +269,37 @@
                         failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"PUT" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
-    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     return operation;
@@ -182,12 +311,38 @@
                           failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"PATCH" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
-    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     return operation;
@@ -199,12 +354,37 @@
                            failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"DELETE" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:nil];
-    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:success failure:failure];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+       sem = dispatch_semaphore_create(0);
+    }
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        if(!self.asyncwork){
+            dispatch_semaphore_signal(sem);
+        }
+    }];
     
     [self.operationQueue addOperation:operation];
     
     if(!self.asyncwork){
-        [operation waitUntilFinished];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
     

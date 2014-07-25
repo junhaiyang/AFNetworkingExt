@@ -48,7 +48,7 @@ static int indexNumber =0;
     self.networkingUploadBlock =uploadBlock;
 }
 -(void)executeSync{
-    self.managerKey =[NSString stringWithFormat:@"queue-sync"];
+    self.managerKey =[NSString stringWithFormat:@"queue-%d-sync",(int)self.responseType];
     self.asyncwork  = NO;
     [self prepareRequest];
 }

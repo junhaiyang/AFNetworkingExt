@@ -118,20 +118,23 @@ static dispatch_queue_t request_operation_completion_queue() {
         if(success){
             success(operation,responseObject);
         }
-        
-        dispatch_semaphore_signal(sem);
+        if(sem){
+            dispatch_semaphore_signal(sem);
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         
         if(failure){
             failure(operation,error);
         }
         
-        dispatch_semaphore_signal(sem);
+        if(sem){
+            dispatch_semaphore_signal(sem);
+        }
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
@@ -157,20 +160,24 @@ static dispatch_queue_t request_operation_completion_queue() {
             success(requestOperation);
             
         }
-        dispatch_semaphore_signal(sem);
+        if(sem){
+            dispatch_semaphore_signal(sem);
+        }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         
         if(failure){
             failure(operation,error);
         }
         
-        dispatch_semaphore_signal(sem);
+        if(sem){
+            dispatch_semaphore_signal(sem);
+        }
         
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
@@ -196,7 +203,7 @@ static dispatch_queue_t request_operation_completion_queue() {
             success(operation,responseObject);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
         
@@ -206,14 +213,14 @@ static dispatch_queue_t request_operation_completion_queue() {
             failure(operation,error);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
@@ -240,7 +247,7 @@ static dispatch_queue_t request_operation_completion_queue() {
             success(operation,responseObject);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -249,14 +256,14 @@ static dispatch_queue_t request_operation_completion_queue() {
             failure(operation,error);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
@@ -282,7 +289,7 @@ static dispatch_queue_t request_operation_completion_queue() {
             success(operation,responseObject);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -291,14 +298,14 @@ static dispatch_queue_t request_operation_completion_queue() {
             failure(operation,error);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
@@ -324,7 +331,7 @@ static dispatch_queue_t request_operation_completion_queue() {
             success(operation,responseObject);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
         
@@ -334,14 +341,14 @@ static dispatch_queue_t request_operation_completion_queue() {
             failure(operation,error);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     
@@ -367,7 +374,7 @@ static dispatch_queue_t request_operation_completion_queue() {
             success(operation,responseObject);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -376,14 +383,14 @@ static dispatch_queue_t request_operation_completion_queue() {
             failure(operation,error);
         }
         
-        if(!self.asyncwork){
+        if(sem){
             dispatch_semaphore_signal(sem);
         }
     }];
     
     [self.operationQueue addOperation:operation];
     
-    if(!self.asyncwork){
+    if(sem){
         dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
     }
     

@@ -68,6 +68,8 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 -(void)executeAsync:(NSInteger)queueId;
 -(void)executeAsyncWithQueueKey:(NSString *)key;
 
+-(void)buildPostRequest:(NSString *)urlString body:(NSData *)body;        //直接提交body数据
+
 -(void)buildPostRequest:(NSString *)urlString form:(NSDictionary *)form;       //提交表单数据：NSString,NSData,NSURL(Local File)
 -(void)buildPostFileRequest:(NSString *)urlString files:(NSDictionary *)files;     //多个文件上传(multipart)
 

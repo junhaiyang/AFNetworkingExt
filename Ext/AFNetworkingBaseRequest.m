@@ -69,6 +69,29 @@ static int indexNumber =0;
 
 #pragma mark
 #pragma mark - build 
+
+-(void)buildPostRequest:(NSString *)urlString body:(NSData *)body {
+    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    
+    manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    
+    __block AFNetworkingBaseRequest *weakSelf = self;
+    
+    operation = (AFCustomRequestOperation *)[manager POST:urlString body:body success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [weakSelf processResult:responseObject];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if(weakSelf.networkingCompletionBlock){
+            weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
+        }
+    }];
+    
+    
+    [self processBlock];
+    
+    
+}
+
+
 -(void)buildPostRequest:(NSString *)urlString form:(NSDictionary *)form{
     
     AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];

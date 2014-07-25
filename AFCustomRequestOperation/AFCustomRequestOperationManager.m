@@ -183,6 +183,54 @@ static dispatch_queue_t request_operation_completion_queue() {
     
     return operation;
 }
+- (AFHTTPRequestOperation *)POST:(NSString *)URLString
+                      body:(NSData *)body
+                         success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                         failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
+{
+    NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"POST" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:nil error:nil];
+    
+    NSString *msgLength = [NSString stringWithFormat:@"%d", [body length]];
+    
+    [request addValue:msgLength forHTTPHeaderField:@"Content-Length"];
+     
+    [request setHTTPBody:body];
+    
+    __block dispatch_semaphore_t sem =NULL;
+    
+    if(!self.asyncwork){
+        sem = dispatch_semaphore_create(0);
+    }
+    
+    AFHTTPRequestOperation *operation = [self HTTPRequestOperationWithRequest:request success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if(success){
+            success(operation,responseObject);
+        }
+        
+        if(sem){
+            dispatch_semaphore_signal(sem);
+        }
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        
+        if(failure){
+            failure(operation,error);
+        }
+        
+        if(sem){
+            dispatch_semaphore_signal(sem);
+        }
+    }];
+    
+    [self.operationQueue addOperation:operation];
+    
+    if(sem){
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    }
+    
+    return operation;
+}
 
 - (AFHTTPRequestOperation *)POST:(NSString *)URLString
                       parameters:(id)parameters

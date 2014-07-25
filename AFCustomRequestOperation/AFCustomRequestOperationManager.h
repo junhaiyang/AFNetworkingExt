@@ -12,4 +12,9 @@
 
 @property (nonatomic,assign) BOOL asyncwork;
 
+- (AFHTTPRequestOperation *)POST:(NSString *)URLString
+                            body:(NSData *)body
+                         success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
+                         failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure;
+
 @end

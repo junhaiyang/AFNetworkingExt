@@ -64,8 +64,7 @@ Pod::Spec.new do |s|
      ks.subspec 'UIImageView+DYLoading' do |ds|
      
      	ds.dependency 'AFNetworking+Ext/AFDownloadRequestOperation'
-        ds.dependency 'AFNetworking+Ext/Base'
-        ds.dependency 'MYSCategoryProperties'
+        ds.dependency 'AFNetworking+Ext/Base' 
     
      	ds.source_files = 'UIKit/UIImageView+DYLoading/*.{h,m,mm}' 
     		 

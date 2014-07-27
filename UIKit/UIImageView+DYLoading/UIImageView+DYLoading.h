@@ -24,19 +24,21 @@
 
 -(void)loadingSyncLocalImage;                                      //同步处理本地图片
 
+-(void)loadingCompletionSelector:(SEL)aSelector withTarget:(id)target NS_AVAILABLE_IOS(5_0);
+
 -(void)loadingAsyncImage:(NSString *)imageUrl;                     //异步下载图片，如果本地有图片的话是同步方式加载本地图片
 
 // This method has been replaced by loadingAsyncImage:
-// and  @property    loadingTarget
-//      @property    loadingAction
--(void)loadingAsyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 8_0);
+// and  loadingCompletionSelector:withTarget:
+
+-(void)loadingAsyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 5_0);
 
 -(void)loadingSyncImage:(NSString *)imageUrl;
 
 // This method has been replaced by loadingSyncImage:
-// and  @property    loadingTarget
-//      @property    loadingAction
--(void)loadingSyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 8_0);
+// and  loadingCompletionSelector:withTarget:
+
+-(void)loadingSyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 5_0);
 
 
 @end

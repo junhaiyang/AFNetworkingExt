@@ -168,6 +168,13 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     }
 }
 
+-(void)loadingCompletionSelector:(SEL)aSelector withTarget:(id)target{
+    
+    self.loadingTarget =target;
+    NSString *selStr =NSStringFromSelector(aSelector);
+    self.loadingAction  =selStr;
+}
+
 -(void)loadingAsyncImage:(NSString *)imageUrl{
     [self loadImage:imageUrl fourceSync:NO];
 }

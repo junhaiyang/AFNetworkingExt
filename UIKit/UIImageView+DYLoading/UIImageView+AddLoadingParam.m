@@ -38,6 +38,7 @@ static const char *defaultLoadingImageKey      ="__defaultLoadingImage__";
 static const char *imageShowSizeTypeKey        ="__imageShowSizeType__";
 static const char *useLoadingDefaultImageKey   ="__useLoadingDefaultImageKey__";
 static const char *loadingAnimationKey         ="__loadingAnimationKey__";
+static const char *loadingObserverNotificationKey         ="__loadingObserverNotificationKey__";
 
 
 -(void)setDefaultLoadingImage:(UIImage *)defaultLoadingImage{
@@ -81,6 +82,14 @@ static const char *loadingAnimationKey         ="__loadingAnimationKey__";
     NSNumber *loadingAnimationValue= objc_getAssociatedObject(self, loadingAnimationKey);
     return [loadingAnimationValue boolValue];
     
+}
+
+-(void)setLoadingObserverNotification:(BOOL)loadingObserverNotification{
+    objc_setAssociatedObject(self, loadingObserverNotificationKey, [NSNumber numberWithBool:loadingObserverNotification], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(BOOL)loadingObserverNotification{
+    NSNumber *loadingAnimationValue= objc_getAssociatedObject(self, loadingObserverNotificationKey);
+    return [loadingAnimationValue boolValue];
 }
 
 #pragma mark - control target

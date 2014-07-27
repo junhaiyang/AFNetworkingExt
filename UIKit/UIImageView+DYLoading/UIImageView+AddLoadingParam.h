@@ -30,8 +30,9 @@ typedef enum ImageRenderType {
 
 // This method has been replaced by UIImageView(AddLoadingPath)->  +setImageCacheSize:
 @property (nonatomic,assign) ImageRenderType  imageRenderType NS_DEPRECATED_IOS(2_0, 5_0);
- 
+
 @property (nonatomic,assign) BOOL  loadingAnimation;
+@property (nonatomic,assign) BOOL  loadingObserverNotification;
 
 #pragma mark - control target
 // This method has been replaced by loadingTargetKey

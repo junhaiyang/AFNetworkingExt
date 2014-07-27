@@ -69,9 +69,7 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
 -(void)recycleLoading{
     //    LOG_DEBUG(@"-------------------recycleLoading--------------");
     //TODO 设置内部取消状态
-    [self.layer removeAllAnimations];
-    
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [self.layer removeAllAnimations]; 
     
     if (self.loadingResourcePath) {
         
@@ -115,13 +113,23 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
  
     
     [self.layer removeAllAnimations];
-    self.loadingAnimation  = NO;
     
+    UIImage *image = [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
+    if(image){
+        self.loadingAnimation  = YES;
+        [self showLoadingImage:image];
+        
+        [self fireTarget];
+        return;
+    }
+    
+    self.loadingAnimation  = NO;
     [self showLoadingImage:nil];
     
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kDYUIImageViewLoadedImageNotification object:nil];
+    if(!self.loadingObserverNotification){
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kDYUIImageViewLoadedImageNotification object:nil];
+        self.loadingObserverNotification= YES;
+    }
     
     [UIImageBatchLoadingManager shareInstance];
     
@@ -271,9 +279,10 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
             if(self.defaultLoadingImage)
                 [self showLoadingImage:nil];
             
-            [[NSNotificationCenter defaultCenter] removeObserver:self];
-            
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kDYUIImageViewLoadedImageNotification object:nil];
+            if(!self.loadingObserverNotification){
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kDYUIImageViewLoadedImageNotification object:nil];
+                self.loadingObserverNotification= YES;
+            }
             
             [[UIImageBatchLoadingManager  shareInstance] startLoad:self.loadingResourcePath token:self.loadingToken url:self.loadingImageUrl cacheKey:self.loadingCacheKey queueId:self.loadingQueueId isLocal:NO];
             

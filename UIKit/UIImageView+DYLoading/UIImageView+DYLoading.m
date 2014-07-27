@@ -169,20 +169,30 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
 }
 
 -(void)loadingAsyncImage:(NSString *)imageUrl{
-    [self loadImage:imageUrl doneSelector:NULL withTarget:NULL fourceSync:NO];
+    [self loadImage:imageUrl fourceSync:NO];
 }
 -(void)loadingAsyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target{
-    [self loadImage:imageUrl doneSelector:aSelector withTarget:target fourceSync:NO];
+    
+    self.loadingTarget =target;
+    NSString *selStr =NSStringFromSelector(aSelector);
+    self.loadingAction  =selStr;
+    
+    [self loadImage:imageUrl fourceSync:NO];
 }
 
 -(void)loadingSyncImage:(NSString *)imageUrl{
-    [self loadImage:imageUrl doneSelector:NULL withTarget:NULL fourceSync:YES];
+    [self loadImage:imageUrl  fourceSync:YES];
 }
 -(void)loadingSyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target{
-    [self loadImage:imageUrl doneSelector:aSelector withTarget:target fourceSync:YES];
+    
+    self.loadingTarget =target;
+    NSString *selStr =NSStringFromSelector(aSelector);
+    self.loadingAction  =selStr;
+    
+    [self loadImage:imageUrl fourceSync:YES];
 }
 
-- (void)loadImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target fourceSync:(BOOL)fourceSync{
+- (void)loadImage:(NSString *)imageUrl fourceSync:(BOOL)fourceSync{
     
     if (imageUrl == nil) {
         self.loadingAnimation = NO;
@@ -190,9 +200,6 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
         return;
     }
     
-    self.loadingTarget =target;
-    NSString *selStr =NSStringFromSelector(aSelector);
-    self.loadingAction  =selStr;
     
     [UIImageBatchLoadingManager shareInstance];
     

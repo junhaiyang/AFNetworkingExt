@@ -6,6 +6,7 @@ Podfile
 	pod 'AFOnoResponseSerializer', '~> 1.0.0'
 	pod 'AFgzipRequestSerializer', '~> 0.0.1'
 	pod 'Ono', '~> 1.1.1'
+	pod 'Godzippa', '~> 1.0.0'
 
 创建
 

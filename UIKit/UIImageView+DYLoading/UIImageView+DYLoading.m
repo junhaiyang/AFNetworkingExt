@@ -153,6 +153,7 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     if(image){
         [self showLoadingImage:image];
     }
+    [self fireTarget];
 }
 -(void)fireTarget{
     SEL sel = NSSelectorFromString([self loadingAction]);

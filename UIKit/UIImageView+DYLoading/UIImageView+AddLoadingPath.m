@@ -127,7 +127,7 @@ static CGSize cacheSize;
     return image.size.width<=cacheSize.width&&image.size.height<=cacheSize.height;
 }
 
-+ (void)setImageCacheSize:(CGSize)size{
++ (void)setSupportImageCacheSize:(CGSize)size{
     cacheSize =size;
 }
 

@@ -43,7 +43,8 @@
 
 // This method use in
 // - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-+ (void)setImageCacheSize:(CGSize)size              NS_AVAILABLE_IOS(5_0);
+// the uiimage size  Less than this size  will be cache,default is CGSizeMake(640.0f, 640.0f)
++ (void)setSupportImageCacheSize:(CGSize)size              NS_AVAILABLE_IOS(5_0);
 
 + (NSCache *)defaultCache;
 

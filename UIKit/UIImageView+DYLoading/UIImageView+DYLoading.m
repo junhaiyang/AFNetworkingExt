@@ -105,15 +105,13 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
 
 -(void)loadingAsyncLocalImage{
     
-    NSString *_imageType=self.loadingImagePathType;
-    NSString *_imageKey=self.loadingImagePathKey;
     
-    if(!_imageType)
-        _imageType =UIIMAGEVIEW_ADDLOADINGPATH_TYPE;
-    if(!_imageKey)
-        _imageKey =UIIMAGEVIEW_ADDLOADINGPATH_KEY;
+    if(!self.loadingImagePathType)
+        self.loadingImagePathType =UIIMAGEVIEW_ADDLOADINGPATH_TYPE;
+    if(!self.loadingImagePathKey)
+        self.loadingImagePathKey =UIIMAGEVIEW_ADDLOADINGPATH_KEY;
     
-    self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",_imageType,_imageKey];
+    self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",self.loadingImagePathType,self.loadingImagePathKey];
  
     
     [self.layer removeAllAnimations];
@@ -135,15 +133,12 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     UIImage *image;
     
     
-    NSString *_imageType=self.loadingImagePathType;
-    NSString *_imageKey=self.loadingImagePathKey;
+    if(!self.loadingImagePathType)
+        self.loadingImagePathType =UIIMAGEVIEW_ADDLOADINGPATH_TYPE;
+    if(!self.loadingImagePathKey)
+        self.loadingImagePathKey =UIIMAGEVIEW_ADDLOADINGPATH_KEY;
     
-    if(!_imageType)
-        _imageType =UIIMAGEVIEW_ADDLOADINGPATH_TYPE;
-    if(!_imageKey)
-        _imageKey =UIIMAGEVIEW_ADDLOADINGPATH_KEY;
-    
-    self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",_imageType,_imageKey];
+    self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",self.loadingImagePathType,self.loadingImagePathKey];
     
     image = [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
     
@@ -235,15 +230,12 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
             
             self.loadingImageUrl =imageUrl;
             
-            NSString *_imageType=self.loadingImagePathType;
-            NSString *_imageKey=self.loadingImagePathKey;
+            if(!self.loadingImagePathType)
+                self.loadingImagePathType =UIIMAGEVIEW_ADDLOADINGPATH_TYPE;
+            if(!self.loadingImagePathKey)
+                self.loadingImagePathKey =UIIMAGEVIEW_ADDLOADINGPATH_KEY;
             
-            if(!_imageType)
-                _imageType =UIIMAGEVIEW_ADDLOADINGPATH_TYPE;
-            if(!_imageKey)
-                _imageKey =UIIMAGEVIEW_ADDLOADINGPATH_KEY;
-            
-            self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",_imageType,_imageKey];
+            self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",self.loadingImagePathType,self.loadingImagePathKey];
             
             self.loadingResourcePath=[self parseLoadingThumbUrl:[NSURL URLWithString:imageUrl]];
             

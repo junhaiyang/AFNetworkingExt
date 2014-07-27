@@ -16,9 +16,19 @@
 
 @property (nonatomic,assign) BOOL asyncwork;
 
+@property (nonatomic,assign,readwrite) NSInteger requestId;
+@property (nonatomic,strong,readwrite) NSString *managerKey;
+
 @end
 
 @implementation AFNetworkingBaseRequest
+
+-(void)dealloc{
+    self.networkingUploadBlock =nil;
+    self.networkingDownloadBlock =nil;
+    self.networkingUploadBlock =nil;
+    operation =nil;
+}
 
 static int indexNumber =0;
 - (instancetype)init
@@ -338,9 +348,6 @@ static int indexNumber =0;
     NSException *e = [[NSException alloc] initWithName:@"processString: 方法必须要重新实现" reason:nil userInfo:nil];
     @throw e;
 }
-
--(void)buildCommonRequestHeader:(NSMutableURLRequest *)request{
-    
-}
+ 
 
 @end

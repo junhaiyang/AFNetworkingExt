@@ -47,8 +47,8 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 
     AFCustomRequestOperation *operation;
 }
-@property (nonatomic,assign) NSInteger requestId;
-@property (nonatomic,strong) NSString *managerKey;
+@property (nonatomic,assign,readonly) NSInteger requestId;
+@property (nonatomic,strong,readonly) NSString *managerKey;
 
 @property (nonatomic,assign) ResponseProtocolType responseType;  //响应协议类型 
  
@@ -79,14 +79,17 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 -(BOOL)isHttpSuccess;
 
 #pragma mark
-#pragma mark  overrided
+
+#pragma mark  can overrided
+
+-(AFHTTPResponseSerializer *)getAFHTTPResponseSerializer;
+
+#pragma mark  need overrided
 
 - (void)prepareRequest;
 
 - (void)processFile:(NSString *)filePath;
-- (void)processDictionary:(id)dictionary;
-- (void)processString:(NSString *)str;
-
--(void)buildCommonRequestHeader:(NSMutableURLRequest *)request;
+- (void)processDictionary:(id)dictionary; //NSArray or NSDictionary
+- (void)processString:(NSString *)str; 
 
 @end

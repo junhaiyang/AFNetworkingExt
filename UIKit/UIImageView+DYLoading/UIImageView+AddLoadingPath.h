@@ -25,8 +25,8 @@
 // This method has been replaced by loadingImagePathKey
 @property (nonatomic,assign) long      loadingImageKey       NS_DEPRECATED_IOS(2_0, 5_0);
 
-@property (nonatomic,strong) NSString *loadingImagePathKey   NS_AVAILABLE_IOS(5_0);         //图片分组编号，非必须
-@property (nonatomic,strong) NSString *loadingImagePathType;    //图片分组，非必须
+@property (nonatomic,strong) NSString *loadingImagePathKey   NS_AVAILABLE_IOS(5_0);         //图片分组编号，非必须,default UIIMAGEVIEW_ADDLOADINGPATH_KEY
+@property (nonatomic,strong) NSString *loadingImagePathType;    //图片分组，非必须,default UIIMAGEVIEW_ADDLOADINGPATH_TYPE
 
 @property (nonatomic,strong) NSString *loadingToken;    
 

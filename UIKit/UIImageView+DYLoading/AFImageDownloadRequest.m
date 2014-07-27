@@ -6,13 +6,10 @@
 
 @implementation AFImageDownloadRequest
 @synthesize  url,filePath; 
-
-static int indexNumber =0;
+ 
 -(id)initWithURL:(NSString *)_url{
     if(self=[super init]){
-        self.url=_url;
-        indexNumber++;
-        self.requestId =indexNumber;
+        self.url=_url; 
         self.responseType=ResponseProtocolTypeFile;
         
     }

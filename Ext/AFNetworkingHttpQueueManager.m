@@ -1,9 +1,5 @@
 //
-//  HttpProtocolManager.m
-//  LiveBroadcast
-//
-//  Created by junhai on 13-1-24.
-//  Copyright (c) 2013年 mRocker. All rights reserved.
+//  HttpProtocolManager.m 
 //
 
 #import "AFNetworkingHttpQueueManager.h"

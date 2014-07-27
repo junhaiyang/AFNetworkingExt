@@ -1,9 +1,5 @@
 //
-//  DownloadRequest.h
-//  Deeper
-//
-//  Created by junhai yang on 12-3-12.
-//  Copyright (c) 2012年 mRocker Ltd. All rights reserved.
+//  DownloadRequest.h 
 //
 
 #import "AFNetworkingBaseRequest.h"

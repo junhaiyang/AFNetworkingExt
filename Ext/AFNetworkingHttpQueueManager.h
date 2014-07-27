@@ -1,9 +1,5 @@
 //
-//  HttpProtocolManager.h
-//  LiveBroadcast
-//
-//  Created by junhai on 13-1-24.
-//  Copyright (c) 2013年 mRocker. All rights reserved.
+//  HttpProtocolManager.h 
 //
 
 #import <Foundation/Foundation.h>  

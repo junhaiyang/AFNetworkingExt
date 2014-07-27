@@ -1,9 +1,5 @@
 //
-//  AFHTTPRequestOperationUtils.m
-//  AFNetworking-Base
-//
-//  Created by yangjunhai on 14-3-27.
-//  Copyright (c) 2014年 soooner. All rights reserved.
+//  AFHTTPRequestOperationUtils.m 
 //
 
 #import "AFHTTPRequestOperationUtils.h"

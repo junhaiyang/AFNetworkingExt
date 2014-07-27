@@ -1,9 +1,5 @@
  //
-//  AFNetworkingBaseRequest.m
-//  AFNetworking-Base
-//
-//  Created by yangjunhai on 14-3-27.
-//  Copyright (c) 2014年 soooner. All rights reserved.
+//  AFNetworkingBaseRequest.m 
 //
 
 #import "AFNetworkingBaseRequest.h"
@@ -80,6 +76,9 @@ static int indexNumber =0;
     operation = (AFCustomRequestOperation *)[manager POST:urlString body:body success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -103,6 +102,9 @@ static int indexNumber =0;
     operation = (AFCustomRequestOperation *)[manager POST:urlString parameters:form success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
                 weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -129,6 +131,9 @@ static int indexNumber =0;
     } success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -155,6 +160,9 @@ static int indexNumber =0;
     } success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -175,6 +183,9 @@ static int indexNumber =0;
     operation = (AFCustomRequestOperation *)[manager GET:urlString parameters:form success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -195,6 +206,9 @@ static int indexNumber =0;
     operation = (AFCustomRequestOperation *)[manager GET:urlString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -214,6 +228,9 @@ static int indexNumber =0;
     operation = (AFCustomRequestOperation *)[manager DELETE:urlString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }

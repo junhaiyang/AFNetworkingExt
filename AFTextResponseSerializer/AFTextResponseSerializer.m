@@ -1,9 +1,5 @@
 //
-//  AFTextResponseSerializer.m
-//  AFNetworking-Base
-//
-//  Created by yangjunhai on 14-3-27.
-//  Copyright (c) 2014年 soooner. All rights reserved.
+//  AFTextResponseSerializer.m 
 //
 
 #import "AFTextResponseSerializer.h"

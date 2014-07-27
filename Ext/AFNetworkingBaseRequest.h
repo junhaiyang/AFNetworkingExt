@@ -1,9 +1,5 @@
 //
-//  AFNetworkingBaseRequest.h
-//  AFNetworking-Base
-//
-//  Created by yangjunhai on 14-3-27.
-//  Copyright (c) 2014年 soooner. All rights reserved.
+//  AFNetworkingBaseRequest.h 
 //
 
 #import <Foundation/Foundation.h>
@@ -55,9 +51,7 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 @property (nonatomic,strong) NSString *managerKey;
 
 @property (nonatomic,assign) ResponseProtocolType responseType;  //响应协议类型 
-
-@property (nonatomic,assign) RequestZipType  requestZipType;  //请求压缩格式
-@property (nonatomic,assign) ResponseZipType responseZipType;         //响应压缩格式
+ 
 
 -(void)completionBlock:(AFNetworkingCompletionBlock)completionBlock;
 -(void)downloadBlock:(AFNetworkingDownloadBlock)downloadBlock;

@@ -26,6 +26,7 @@
 @property (nonatomic,assign) long      loadingImageKey       NS_DEPRECATED_IOS(2_0, 5_0);
 
 @property (nonatomic,strong) NSString *loadingImagePathKey   NS_AVAILABLE_IOS(5_0);         //图片分组编号，非必须,default UIIMAGEVIEW_ADDLOADINGPATH_KEY
+@property (nonatomic,strong) NSString *loadingImageNameKey   NS_AVAILABLE_IOS(5_0);         //图片文件名,优先级高于loadingImagePathKey
 @property (nonatomic,strong) NSString *loadingImagePathType;    //图片分组，非必须,default UIIMAGEVIEW_ADDLOADINGPATH_TYPE
 
 @property (nonatomic,strong) NSString *loadingToken;    
@@ -58,12 +59,16 @@
 #pragma mark - image path method
 
 -(NSString *)parseLoadingThumbUrl:(NSURL *)url;
+
+- (NSString *)parseLoadingNameKey:(NSString *)nameKey;
  
 +(void)clearAllImageAllCacheFile;
 
 +(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey;
 
 +(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url;
+
++(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey nameKey:(NSString *)nameKey;
 
 
 @end

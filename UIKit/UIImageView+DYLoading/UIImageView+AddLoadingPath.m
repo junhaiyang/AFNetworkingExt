@@ -25,8 +25,9 @@
 static const char *loadingQueueIdKey           ="__loadingQueueId__";
 static const char *loadingCacheKeyKey          ="__loadingCacheKey__";
 static const char *loadingResourcePathKey      ="__loadingResourcePath__";
-static const char *loadingImageUrlKey          ="__loadingImageUrl__"; 
+static const char *loadingImageUrlKey          ="__loadingImageUrl__";
 static const char *loadingImageKeyKey          ="__loadingImageKeyKey__";
+static const char *loadingImageNameKeyKey          ="__loadingImageNameKeyKey__";
 static const char *loadingImagePathTypeKey     ="__loadingImagePathType__";
 static const char *loadingTokenKey             ="__loadingToken__";
 static const char *loadingTargetKey             ="__loadingTarget__";
@@ -82,6 +83,13 @@ static const char *loadingActionKey             ="__loadingAction__";
 -(NSString *)loadingImagePathKey{
     return objc_getAssociatedObject(self, loadingImageKeyKey);
 }
+-(void)setLoadingImageNameKey:(NSString *)loadingImageNameKey{
+    objc_setAssociatedObject(self, loadingImageNameKeyKey, loadingImageNameKey, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+-(NSString *)loadingImageNameKey{
+    return objc_getAssociatedObject(self, loadingImageNameKeyKey);
+}
+
 -(void)setLoadingImagePathType:(NSString *)loadingImagePathType{
     objc_setAssociatedObject(self, loadingImagePathTypeKey, loadingImagePathType, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
@@ -228,14 +236,34 @@ static NSObject *lock;
     
     return  [self parseLoadingImagePath:dirPath];
 }
+- (NSString *)parseLoadingNameKey:(NSString *)nameKey{
+    
+    NSString *content=[[self class] getThumbPath];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSString *typeDirPath=[content stringByAppendingPathComponent:self.loadingImagePathType];
+    if(![fileManager fileExistsAtPath:typeDirPath isDirectory:nil]){
+        [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:self.loadingImagePathKey];
+    if(![fileManager fileExistsAtPath:imageDirPath isDirectory:nil]){
+        [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+     
+    
+    NSString *dirPath=[imageDirPath stringByAppendingPathComponent:nameKey];
+    
+    return  [self parseLoadingImagePath:dirPath];
+}
 
 -(NSString *)parseLoadingImagePath:(NSString *)imagePath{
     
     NSMutableString *filePath=[[NSMutableString alloc] init];
     
     [filePath appendString:imagePath];
-    
-    [filePath appendString:@"."];
+     
     [filePath appendString:@".png"];
     
     return filePath;
@@ -299,6 +327,32 @@ static NSObject *lock;
     
     [[NSFileManager defaultManager] removeItemAtPath:path error:nil]; 
 }
++(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey nameKey:(NSString *)nameKey{
+    NSString *content=[[self class] getThumbPath];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSString *typeDirPath=[content stringByAppendingPathComponent:imagePathType];
+    if(![fileManager fileExistsAtPath:typeDirPath isDirectory:nil]){
+        [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imageKey];
+    if(![fileManager fileExistsAtPath:imageDirPath isDirectory:nil]){
+        [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *dirPath=[imageDirPath stringByAppendingPathComponent:nameKey];
+    
+    NSMutableString *filePath=[[NSMutableString alloc] init];
+    
+    [filePath appendString:dirPath];
+    
+    
+    [filePath appendString:@".png"];
+    
+    return filePath;
+}
 
 +(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url{
     NSString *content=[[self class] getThumbPath];
@@ -323,7 +377,6 @@ static NSObject *lock;
     [filePath appendString:dirPath];
     
     
-    [filePath appendString:@"."];
     [filePath appendString:@".png"];
     
     return filePath;
@@ -340,7 +393,8 @@ static NSObject *lock;
     
     self.loadingTarget =nil;
     self.loadingAction =nil;
-     
+    
+    self.loadingImageNameKey =nil;
 }
 
 -(void)dealloc{

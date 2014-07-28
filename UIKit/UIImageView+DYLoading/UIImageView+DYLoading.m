@@ -245,7 +245,12 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
             
             self.loadingCacheKey = [NSString stringWithFormat:@"%@--%@",self.loadingImagePathType,self.loadingImagePathKey];
             
-            self.loadingResourcePath=[self parseLoadingThumbUrl:[NSURL URLWithString:imageUrl]];
+            if(self.loadingImageNameKey){
+                self.loadingResourcePath=[self parseLoadingNameKey:self.loadingImageNameKey];
+            }else{
+                self.loadingResourcePath=[self parseLoadingThumbUrl:[NSURL URLWithString:imageUrl]];
+            }
+            
             
             UIImage *image = [[self class] loadImage:self.loadingCacheKey secondKey:self.loadingResourcePath];
             if(image){

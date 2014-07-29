@@ -31,14 +31,14 @@
 // This method has been replaced by loadingAsyncImage:
 // and  loadingCompletionSelector:withTarget:
 
--(void)loadingAsyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 5_0);
+-(void)loadingAsyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 5_0, "Use -loadingAsyncImage: Before Use -loadingCompletionSelector:withTarget:");
 
 -(void)loadingSyncImage:(NSString *)imageUrl;
 
 // This method has been replaced by loadingSyncImage:
 // and  loadingCompletionSelector:withTarget:
 
--(void)loadingSyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 5_0);
+-(void)loadingSyncImage:(NSString *)imageUrl doneSelector:(SEL)aSelector withTarget:(id)target NS_DEPRECATED_IOS(2_0, 5_0, "Use -loadingAsyncImage: Before Use -loadingCompletionSelector:withTarget:");
 
 
 @end

@@ -60,17 +60,17 @@
 
 -(NSString *)parseLoadingThumbUrl:(NSURL *)url;
 
-- (NSString *)parseLoadingNameKey:(NSString *)nameKey;
+- (NSString *)parseLoadingNameKey:(NSString *)imageNameKey;
  
 +(void)clearAllImageAllCacheFile;
 
 +(void)clearImageCache:(NSString *)imagePathType;
 
-+(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey;
++(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imagePathKey;
 
-+(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url;
++(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imagePathKey url:(NSURL *)url;
 
-+(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey nameKey:(NSString *)nameKey;
++(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imagePathKey nameKey:(NSString *)nameKey;
 
 
 @end

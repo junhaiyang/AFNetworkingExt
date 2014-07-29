@@ -236,7 +236,7 @@ static NSObject *lock;
     
     return  [self parseLoadingImagePath:dirPath];
 }
-- (NSString *)parseLoadingNameKey:(NSString *)nameKey{
+- (NSString *)parseLoadingNameKey:(NSString *)imageNameKey{
     
     NSString *content=[[self class] getThumbPath];
     
@@ -253,7 +253,7 @@ static NSObject *lock;
     }
      
     
-    NSString *dirPath=[imageDirPath stringByAppendingPathComponent:nameKey];
+    NSString *dirPath=[imageDirPath stringByAppendingPathComponent:imageNameKey];
     
     return  [self parseLoadingImagePath:dirPath];
 }
@@ -288,7 +288,7 @@ static NSObject *lock;
     [[[self class] defaultCache] removeAllObjects];
 }
 
-+(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey{
++(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imagePathKey{
     NSString *content=[[self class] getThumbPath];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -298,14 +298,14 @@ static NSObject *lock;
         [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imageKey];
+    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imagePathKey];
     if(![fileManager fileExistsAtPath:imageDirPath isDirectory:nil]){
         [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
     [UIImageView clearDir:imageDirPath];
      
-    NSString *cacheKey = [NSString stringWithFormat:@"%@--%@",imagePathType,imageKey];
+    NSString *cacheKey = [NSString stringWithFormat:@"%@--%@",imagePathType,imagePathKey];
     
     [[[self class] defaultCache] removeObjectForKey:cacheKey];
 }
@@ -340,7 +340,7 @@ static NSObject *lock;
     
     [[NSFileManager defaultManager] removeItemAtPath:path error:nil]; 
 }
-+(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey nameKey:(NSString *)nameKey{
++(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imagePathKey nameKey:(NSString *)nameKey{
     NSString *content=[[self class] getThumbPath];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -350,7 +350,7 @@ static NSObject *lock;
         [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imageKey];
+    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imagePathKey];
     if(![fileManager fileExistsAtPath:imageDirPath isDirectory:nil]){
         [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
@@ -367,7 +367,7 @@ static NSObject *lock;
     return filePath;
 }
 
-+(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url{
++(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imagePathKey url:(NSURL *)url{
     NSString *content=[[self class] getThumbPath];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -377,7 +377,7 @@ static NSObject *lock;
         [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imageKey];
+    NSString *imageDirPath=[typeDirPath stringByAppendingPathComponent:imagePathKey];
     if(![fileManager fileExistsAtPath:imageDirPath isDirectory:nil]){
         [fileManager createDirectoryAtPath:imageDirPath withIntermediateDirectories:YES attributes:nil error:nil];
     }

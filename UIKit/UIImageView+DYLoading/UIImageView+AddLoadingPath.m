@@ -272,7 +272,21 @@ static NSObject *lock;
     NSString *content=[[self class] getThumbPath];
     [[self class] clearPath:content];
 }
- 
+
++(void)clearImageCache:(NSString *)imagePathType{
+    NSString *content=[[self class] getThumbPath];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSString *typeDirPath=[content stringByAppendingPathComponent:imagePathType];
+    if(![fileManager fileExistsAtPath:typeDirPath isDirectory:nil]){
+        [fileManager createDirectoryAtPath:typeDirPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    [UIImageView clearDir:typeDirPath];
+    
+    [[[self class] defaultCache] removeAllObjects];
+}
 
 +(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey{
     NSString *content=[[self class] getThumbPath];
@@ -290,8 +304,7 @@ static NSObject *lock;
     }
     
     [UIImageView clearDir:imageDirPath];
-    
-    
+     
     NSString *cacheKey = [NSString stringWithFormat:@"%@--%@",imagePathType,imageKey];
     
     [[[self class] defaultCache] removeObjectForKey:cacheKey];

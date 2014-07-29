@@ -64,6 +64,8 @@
  
 +(void)clearAllImageAllCacheFile;
 
++(void)clearImageCache:(NSString *)imagePathType;
+
 +(void)clearImageCache:(NSString *)imagePathType imageKey:(NSString *)imageKey;
 
 +(NSString *)parseImagePath:(NSString *)imagePathType imageKey:(NSString *)imageKey url:(NSURL *)url;

@@ -107,8 +107,7 @@ UIImageView+DYLoading:缓存图片到本地文件系统，并且出现相同下�
 	
 	
     self.imageView.defaultLoadingImage = [UIImage imageNamed:@"icon"]; 
-    imageView.loadingImagePathType = @"icon";
-    #imageView.loadingImageKey = [NSString stringWithFormat:@"%lld", user.uid];
+    imageView.loadingImagePathType = @"icon"; 
     imageView.loadingImagePathKey = [NSString stringWithFormat:@"%lld", user.uid]; 
     imageView.loadingQueueId = queueId;
     

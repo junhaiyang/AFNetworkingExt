@@ -239,7 +239,7 @@ static int indexNumber =0;
         [weakSelf processResult:responseObject];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
 #if DEBUG
-        NSLog(@"failure:%@",error);
+        NSLog(@"响应失败:%@",error);
 #endif
         if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
@@ -267,6 +267,9 @@ static int indexNumber =0;
         }
     }
     @catch (NSException *exception) {
+#if DEBUG
+        NSLog(@"处理结果失败:%@",exception);
+#endif
         if(self.networkingCompletionBlock){
             self.networkingCompletionBlock(self,StatusCodeProcessError);
         }

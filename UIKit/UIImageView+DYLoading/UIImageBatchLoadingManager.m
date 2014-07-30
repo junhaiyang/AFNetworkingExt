@@ -246,19 +246,20 @@ static NSObject *lock;
     return resImage;
 }
 -(void)processLocalImage:(NSString *)imagePath cacheKey:(NSString *)cacheKey{
+    @autoreleasepool {
         @try {
             
             UIImage *image = [UIImageView loadImage:cacheKey secondKey:imagePath];
             
             if(image){
                 //TODO notication
-//                dispatch_manager_load_image_main_sync_undeadlock_fun(^{
-                    UIImageLoadedEntry *loadedEntry =[[UIImageLoadedEntry alloc] init];
-                    loadedEntry.imagePath =[[NSString alloc] initWithString:imagePath];
-                    loadedEntry.image =image;
-                    
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kDYUIImageViewLoadedImageNotification object:loadedEntry];
-//                });
+                //                dispatch_manager_load_image_main_sync_undeadlock_fun(^{
+                UIImageLoadedEntry *loadedEntry =[[UIImageLoadedEntry alloc] init];
+                loadedEntry.imagePath =[[NSString alloc] initWithString:imagePath];
+                loadedEntry.image =image;
+                
+                [[NSNotificationCenter defaultCenter] postNotificationName:kDYUIImageViewLoadedImageNotification object:loadedEntry];
+                //                });
                 
                 
             }else{
@@ -271,13 +272,13 @@ static NSObject *lock;
                         [UIImageView loadImage:cacheKey secondKey:imagePath image:showImage];
                     }
                     //TODO notication
-//                    dispatch_manager_load_image_main_sync_undeadlock_fun(^{
-                        UIImageLoadedEntry *loadedEntry =[[UIImageLoadedEntry alloc] init];
-                        loadedEntry.imagePath =[[NSString alloc] initWithString:imagePath];
-                        loadedEntry.image =showImage;
-                        
-                        [[NSNotificationCenter defaultCenter] postNotificationName:kDYUIImageViewLoadedImageNotification object:loadedEntry];
-//                    });
+                    //                    dispatch_manager_load_image_main_sync_undeadlock_fun(^{
+                    UIImageLoadedEntry *loadedEntry =[[UIImageLoadedEntry alloc] init];
+                    loadedEntry.imagePath =[[NSString alloc] initWithString:imagePath];
+                    loadedEntry.image =showImage;
+                    
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kDYUIImageViewLoadedImageNotification object:loadedEntry];
+                    //                    });
                 }
             }
         }
@@ -286,6 +287,8 @@ static NSObject *lock;
             NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
 #endif
         }
+    }
+    
 }
 
 -(void)stopLoad:(NSString *)resourcePath token:(NSString *)token{

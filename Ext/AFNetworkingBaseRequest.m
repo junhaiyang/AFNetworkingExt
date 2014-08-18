@@ -309,14 +309,16 @@ static int indexNumber =0;
     AFHTTPResponseSerializer *responseSerializer;
     if(self.responseType==ResponseProtocolTypeNormal){
         responseSerializer= [AFTextResponseSerializer serializer];
+        responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"text/xml", @"text/asa" ,@"text/asp",@"text/scriptlet",@"text/vnd.wap.wml",@"text/plain",@"text/webviewhtml",@"text/x-ms-odc",@"text/css",@"text/vnd.rn-realtext3d",@"text/vnd.rn-realtext",@"text/iuls",@"text/x-vcard",nil];
     }else if (self.responseType == ResponseProtocolTypeXML){
         responseSerializer= [AFOnoResponseSerializer XMLResponseSerializer];
+        responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"text/xml", @"application/xml",@"application/x-gzip",@"text/webviewhtml", nil];
     }else{ 
         responseSerializer= [AFJSONResponseSerializer serializer];
+        responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"application/json",@"text/xml", @"application/xml",@"application/x-gzip", nil];
     }
     
     
-    responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"text/html",@"application/json",@"text/xml", @"application/xml",@"application/x-gzip", nil];
     
     return responseSerializer;
 }

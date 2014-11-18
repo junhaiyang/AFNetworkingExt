@@ -27,6 +27,7 @@ void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block
 @interface UIImageBatchLoadEntry : NSObject
 @property (nonatomic,strong) NSString *loadKey;    //请求标识，url
 @property (nonatomic,strong) NSMutableSet *imagesTokens;   //待处理图片标识
+@property (nonatomic,strong) NSMutableSet *waitTokens;   //待处理图片标识
 @property (nonatomic,assign) NSInteger queueId;
 @property (nonatomic,assign) NSInteger requestId;
 
@@ -39,6 +40,7 @@ void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block
     self = [super init];
     if (self) {
         self.imagesTokens =[[NSMutableSet alloc] init];
+        self.waitTokens=[[NSMutableSet alloc] init];
     }
     return self;
 }
@@ -86,6 +88,42 @@ static NSObject *lock;
     return sharedInstance;
 }
 
++(void)addWaitPath:(NSString *)path token:(NSString *)token{
+    @synchronized(lock){
+        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
+        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        if(entry==nil){
+            entry = [[UIImageBatchLoadEntry alloc] init];
+            [imageLoadManager.poolDictionary setObject:entry forKey:path];
+        }
+        [entry.waitTokens addObject:token];
+    }
+    
+}
+
++ (BOOL)isWaiting:(NSString *)path{
+    BOOL result = NO;
+    @synchronized(lock){
+        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
+        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        if(entry){
+            result = entry.waitTokens.count>0;
+        }
+    }
+    return result;
+}
+
++(void)removeWait:(NSString *)path token:(NSString *)token{
+    @synchronized(lock){
+        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
+        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        if(entry!=nil){
+            [entry.waitTokens removeObject:token];
+        }
+    }
+    
+}
+
 +(void)addLoadPath:(NSString *)path token:(NSString *)token{
     @synchronized(lock){
         UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
@@ -97,6 +135,18 @@ static NSObject *lock;
         [entry.imagesTokens addObject:token];
     }
 
+}
+
++ (BOOL)isDownloading:(NSString *)path{
+    BOOL result = NO;
+    @synchronized(lock){
+        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
+        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        if(entry){
+            result =  entry.imagesTokens.count>0;
+        }
+    }
+    return result;
 }
 
 +(void)addLoadPath:(NSString *)path  token:(NSString *)token queue:(NSInteger)queueId requestId:(NSInteger)requestId{
@@ -137,14 +187,6 @@ static NSObject *lock;
     }
 }
 
-+ (BOOL)isDownloading:(NSString *)path{
-    BOOL result = NO;
-    @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        result = ([imageLoadManager.poolDictionary objectForKey:path]!=nil);
-    }
-    return result;
-}
 
 -(void)startLoad:(NSString *)resourcePath token:(NSString *)token url:(NSString *)url cacheKey:(NSString *)cacheKey queueId:(NSInteger)queueId isLocal:(BOOL)local{
     
@@ -157,9 +199,19 @@ static NSObject *lock;
     
     __block UIImageBatchLoadingManager *weakSelf = self;
     
+    [UIImageBatchLoadingManager addWaitPath:blockResourcePath token:blockToken];
+    
     dispatch_async(image_process_queue, ^{
         @autoreleasepool {
             @try {
+                
+                if(![UIImageBatchLoadingManager isWaiting:blockResourcePath]){
+                    return;
+                }
+                
+                
+                [UIImageBatchLoadingManager removeWait:blockResourcePath token:blockToken];
+                
                 if(blockLocal){
                     // TODO: 处理本地图片，
                     [weakSelf processLocalImage:blockResourcePath cacheKey:blockCacheKey];
@@ -292,6 +344,7 @@ static NSObject *lock;
 }
 
 -(void)stopLoad:(NSString *)resourcePath token:(NSString *)token{
+    [UIImageBatchLoadingManager removeWait:resourcePath token:token];
     [UIImageBatchLoadingManager removeLoadPath:resourcePath token:token];
 }
 

@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
  
 
   s.name         = "AFNetworking+Ext"
-  s.version      = "1.0"
+  s.version      = "1.1"
   s.summary      = "AFNetworking的封装, 并提供一个 UIImageView+DYLoading  cache in fileSystem+memory"
  
 
@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 
   s.ios.framework = 'UIKit'
  
-  s.source = { :git => 'https://github.com/junhaiyang/AFNetworkingExt.git' , :tag => '1.0'} 
+  s.source = { :git => 'https://github.com/junhaiyang/AFNetworkingExt.git' , :tag => '1.1'} 
  
   s.requires_arc = true
   

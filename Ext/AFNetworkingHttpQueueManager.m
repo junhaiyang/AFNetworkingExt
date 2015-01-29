@@ -77,7 +77,7 @@ static NSObject *lock;
         for (NSString *_key in queueDictionary) {
             if([_key hasPrefix:key]){
                 
-                AFCustomRequestOperationManager *manager=[queueDictionary objectForKey:key];
+                AFCustomRequestOperationManager *manager=[queueDictionary objectForKey:_key];
                 [manager.operationQueue cancelAllOperations];
             }
         }
@@ -105,7 +105,7 @@ static NSObject *lock;
             if([_key hasPrefix:key]){
                 NSLog(@"cancelQueue :%@ requestId :%d",_key,requestId);
                 
-                AFCustomRequestOperationManager *manager=[queueDictionary objectForKey:key];
+                AFCustomRequestOperationManager *manager=[queueDictionary objectForKey:_key];
                 
                 NSArray *operations=[manager.operationQueue operations];
                 for (NSOperation *operation in operations) {

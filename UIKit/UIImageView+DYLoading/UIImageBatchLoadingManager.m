@@ -246,7 +246,7 @@ static NSObject *lock;
                     downloadRequest.filePath=blockResourcePath;
                     
 #if DEBUG
-                    NSLog(@"url requestId:%d imageUrl:%@",downloadRequest.(int)requestId,url);
+                    NSLog(@"url requestId:%d imageUrl:%@",(int)downloadRequest.requestId,url);
                     
 #endif
                     //添加到队列中

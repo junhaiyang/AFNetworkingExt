@@ -190,7 +190,7 @@ static dispatch_queue_t request_operation_completion_queue() {
 {
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:@"POST" URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:nil error:nil];
     
-    NSString *msgLength = [NSString stringWithFormat:@"%d", [body length]];
+    NSString *msgLength = [NSString stringWithFormat:@"%d", (int)[body length]];
     
     [request addValue:msgLength forHTTPHeaderField:@"Content-Length"];
      

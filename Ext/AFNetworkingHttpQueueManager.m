@@ -93,7 +93,7 @@ static NSObject *lock;
 
 
 +(void)cancelQueue:(NSInteger)queueId requestId:(NSInteger)requestId{
-    NSString *key=[NSString stringWithFormat:@"%d",queueId];
+    NSString *key=[NSString stringWithFormat:@"%d",(int)queueId];
     [AFNetworkHttpRequestManager cancelQueueStr:key requestId:requestId];
 }
 
@@ -103,7 +103,7 @@ static NSObject *lock;
         NSString *key=[NSString stringWithFormat:@"%@-",queueId];
         for (NSString *_key in queueDictionary) {
             if([_key hasPrefix:key]){
-                NSLog(@"cancelQueue :%@ requestId :%d",_key,requestId);
+                NSLog(@"cancelQueue :%@ requestId :%d",_key,(int)requestId);
                 
                 AFCustomRequestOperationManager *manager=[queueDictionary objectForKey:_key];
                 
@@ -111,7 +111,7 @@ static NSObject *lock;
                 for (NSOperation *operation in operations) {
                     if([operation isKindOfClass:[AFCustomRequestOperation class]]){
                         if (((AFCustomRequestOperation *)operation).requestId==requestId) {
-                            NSLog(@"cancel :%@ requestId :%d",operation,requestId);
+                            NSLog(@"cancel :%@ requestId :%d",operation,(int)requestId);
                             [operation cancel];
                         }
                     }

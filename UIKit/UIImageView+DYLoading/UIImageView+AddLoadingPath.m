@@ -35,7 +35,7 @@ static const char *loadingActionKey             ="__loadingAction__";
 
 
 -(void)setLoadingQueueId:(NSInteger)loadingQueueId{
-    objc_setAssociatedObject(self, loadingQueueIdKey, [NSNumber numberWithInt:loadingQueueId], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, loadingQueueIdKey, [NSNumber numberWithInteger:loadingQueueId], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 -(NSInteger)loadingQueueId{
     NSNumber *loadingQueueIdValue= objc_getAssociatedObject(self, loadingQueueIdKey);
@@ -192,7 +192,7 @@ static NSObject *lock;
     
     unsigned char result[16];
     
-    CC_MD5( cStr, strlen(cStr), result ); // This is the md5 call
+    CC_MD5( cStr, (CC_LONG)strlen(cStr), result ); // This is the md5 call
     
     return [NSString stringWithFormat:
             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",

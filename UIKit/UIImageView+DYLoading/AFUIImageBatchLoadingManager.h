@@ -4,18 +4,18 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString *const kDYUIImageViewLoadedImageNotification;
+extern NSString *const kAFDYUIImageViewLoadedImageNotification;
 
-@interface UIImageLoadedEntry : NSObject
+@interface AFUIImageLoadedEntry : NSObject
 
 @property (nonatomic,strong) NSString *imagePath;
 @property (nonatomic,strong) UIImage *image;
 
 @end
 
-@interface UIImageBatchLoadingManager : NSObject
+@interface AFUIImageBatchLoadingManager : NSObject
 
-+(UIImageBatchLoadingManager *)shareInstance;
++(AFUIImageBatchLoadingManager *)shareInstance;
 
 +(NSString *)loadingToken;
 

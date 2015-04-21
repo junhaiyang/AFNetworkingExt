@@ -5,9 +5,9 @@
 #import "UIImageView+DYLoading.h"
 #import <objc/runtime.h>
 #import "AFNetworkingHttpQueueManager.h"
-#import "UIImageBatchLoadingManager.h"
+#import "AFUIImageBatchLoadingManager.h"
 
-void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t block){
+void dispatch_dy_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t block){
     if ([NSThread isMainThread]) {
         block();
     } else {
@@ -21,16 +21,16 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
 
 - (void)refrashLoadedImage:(NSNotification *)note {
     
-    UIImageLoadedEntry *loadedEnyry = (UIImageLoadedEntry *) [note object];
+    AFUIImageLoadedEntry *loadedEnyry = (AFUIImageLoadedEntry *) [note object];
     
-    if([loadedEnyry isKindOfClass:[UIImageLoadedEntry class]]){
+    if([loadedEnyry isKindOfClass:[AFUIImageLoadedEntry class]]){
     
         if([self.loadingResourcePath isEqualToString:loadedEnyry.imagePath]){
             
             __weak UIImageView *weakSelf =self;
             __block UIImage *blockImage =loadedEnyry.image;
             
-            dispatch_imageview_load_image_main_sync_undeadlock_fun(^{
+            dispatch_dy_imageview_load_image_main_sync_undeadlock_fun(^{
                 weakSelf.loadingAnimation = YES;
                 [weakSelf showLoadingImage:blockImage];
             });
@@ -57,7 +57,7 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     if (self.loadingResourcePath) {
         
         
-        [[UIImageBatchLoadingManager  shareInstance] stopLoad:self.loadingResourcePath token:self.loadingToken];
+        [[AFUIImageBatchLoadingManager  shareInstance] stopLoad:self.loadingResourcePath token:self.loadingToken];
         
     }
     [self recycleLoadingPath];
@@ -74,7 +74,7 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     if (self.loadingResourcePath) {
         
         
-        [[UIImageBatchLoadingManager  shareInstance] stopLoad:self.loadingResourcePath token:self.loadingToken];
+        [[AFUIImageBatchLoadingManager  shareInstance] stopLoad:self.loadingResourcePath token:self.loadingToken];
         
     }
     [self recycleLoadingPath];
@@ -127,15 +127,15 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     [self showLoadingImage:nil];
     
     if(!self.loadingObserverNotification){
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kDYUIImageViewLoadedImageNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kAFDYUIImageViewLoadedImageNotification object:nil];
         self.loadingObserverNotification= YES;
     }
     
-    [UIImageBatchLoadingManager shareInstance];
+    [AFUIImageBatchLoadingManager shareInstance];
     
-    self.loadingToken =[UIImageBatchLoadingManager  loadingToken];
+    self.loadingToken =[AFUIImageBatchLoadingManager  loadingToken];
     
-    [[UIImageBatchLoadingManager  shareInstance] startLoad:self.loadingResourcePath token:self.loadingToken url:self.loadingImageUrl cacheKey:self.loadingCacheKey queueId:self.loadingQueueId isLocal:YES];
+    [[AFUIImageBatchLoadingManager  shareInstance] startLoad:self.loadingResourcePath token:self.loadingToken url:self.loadingImageUrl cacheKey:self.loadingCacheKey queueId:self.loadingQueueId isLocal:YES];
 }
 -(void)loadingSyncLocalImage{
     UIImage *image;
@@ -212,9 +212,9 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
     }
     
     
-    [UIImageBatchLoadingManager shareInstance];
+    [AFUIImageBatchLoadingManager shareInstance];
     
-    self.loadingToken =[UIImageBatchLoadingManager  loadingToken];
+    self.loadingToken =[AFUIImageBatchLoadingManager  loadingToken];
     
     @autoreleasepool {
         @try {
@@ -285,11 +285,11 @@ void dispatch_imageview_load_image_main_sync_undeadlock_fun(dispatch_block_t blo
                 [self showLoadingImage:nil];
             
             if(!self.loadingObserverNotification){
-                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kDYUIImageViewLoadedImageNotification object:nil];
+                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refrashLoadedImage:) name:kAFDYUIImageViewLoadedImageNotification object:nil];
                 self.loadingObserverNotification= YES;
             }
             
-            [[UIImageBatchLoadingManager  shareInstance] startLoad:self.loadingResourcePath token:self.loadingToken url:self.loadingImageUrl cacheKey:self.loadingCacheKey queueId:self.loadingQueueId isLocal:NO];
+            [[AFUIImageBatchLoadingManager  shareInstance] startLoad:self.loadingResourcePath token:self.loadingToken url:self.loadingImageUrl cacheKey:self.loadingCacheKey queueId:self.loadingQueueId isLocal:NO];
             
         }
         @catch (NSException *exception) {

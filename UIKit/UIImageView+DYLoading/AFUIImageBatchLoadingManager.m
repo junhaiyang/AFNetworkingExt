@@ -2,13 +2,13 @@
 //  UIImageBatchLoadingManager.m 
 //
 
-#import "UIImageBatchLoadingManager.h"
+#import "AFUIImageBatchLoadingManager.h"
 #import "AFImageDownloadRequest.h"
 #import "AFNetworkingHttpQueueManager.h"
 #import "UIImageView+AddLoadingPath.h"
 
 
-NSString *const kDYUIImageViewLoadedImageNotification       = @"kDYUIImageViewLoadedImageNotification";
+NSString *const kAFDYUIImageViewLoadedImageNotification       = @"kDYUIImageViewLoadedImageNotification";
 
 void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block){
     if ([NSThread isMainThread]) {
@@ -18,13 +18,13 @@ void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block
     }
 }
 
-@implementation UIImageLoadedEntry
+@implementation AFUIImageLoadedEntry
 
 @synthesize imagePath,image;
 
 @end
 
-@interface UIImageBatchLoadEntry : NSObject
+@interface AFUIImageBatchLoadEntry : NSObject
 @property (nonatomic,strong) NSString *loadKey;    //请求标识，url
 @property (nonatomic,strong) NSMutableSet *imagesTokens;   //待处理图片标识
 @property (nonatomic,strong) NSMutableSet *waitTokens;   //待处理图片标识
@@ -33,7 +33,7 @@ void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block
 
 @end
 
-@implementation UIImageBatchLoadEntry
+@implementation AFUIImageBatchLoadEntry
 
 - (instancetype)init
 {
@@ -47,7 +47,7 @@ void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block
 
 @end
 
-@interface UIImageBatchLoadingManager(){
+@interface AFUIImageBatchLoadingManager(){
 
     dispatch_queue_t  image_process_queue;
 }
@@ -55,7 +55,7 @@ void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block
 
 @end
 
-@implementation UIImageBatchLoadingManager
+@implementation AFUIImageBatchLoadingManager
 
 - (instancetype)init
 {
@@ -77,12 +77,12 @@ static long long number =0;
 }
 
 static NSObject *lock;
-+(UIImageBatchLoadingManager *)shareInstance{
-    static UIImageBatchLoadingManager *sharedInstance = nil;
++(AFUIImageBatchLoadingManager *)shareInstance{
+    static AFUIImageBatchLoadingManager *sharedInstance = nil;
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken, ^{
-        sharedInstance = [[UIImageBatchLoadingManager alloc] init];
+        sharedInstance = [[AFUIImageBatchLoadingManager alloc] init];
         lock = [[NSObject alloc] init];
     });
     return sharedInstance;
@@ -90,10 +90,10 @@ static NSObject *lock;
 
 +(void)addWaitPath:(NSString *)path token:(NSString *)token{
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry==nil){
-            entry = [[UIImageBatchLoadEntry alloc] init];
+            entry = [[AFUIImageBatchLoadEntry alloc] init];
             [imageLoadManager.poolDictionary setObject:entry forKey:path];
         }
         [entry.waitTokens addObject:token];
@@ -104,8 +104,8 @@ static NSObject *lock;
 + (BOOL)isWaiting:(NSString *)path{
     BOOL result = NO;
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry){
             result = entry.waitTokens.count>0;
         }
@@ -115,8 +115,8 @@ static NSObject *lock;
 
 +(void)removeWait:(NSString *)path token:(NSString *)token{
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry!=nil){
             [entry.waitTokens removeObject:token];
         }
@@ -126,10 +126,10 @@ static NSObject *lock;
 
 +(void)addLoadPath:(NSString *)path token:(NSString *)token{
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry==nil){
-            entry = [[UIImageBatchLoadEntry alloc] init];
+            entry = [[AFUIImageBatchLoadEntry alloc] init];
             [imageLoadManager.poolDictionary setObject:entry forKey:path];
         }
         [entry.imagesTokens addObject:token];
@@ -140,8 +140,8 @@ static NSObject *lock;
 + (BOOL)isDownloading:(NSString *)path{
     BOOL result = NO;
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry){
             result =  entry.imagesTokens.count>0;
         }
@@ -151,10 +151,10 @@ static NSObject *lock;
 
 +(void)addLoadPath:(NSString *)path  token:(NSString *)token queue:(NSInteger)queueId requestId:(NSInteger)requestId{
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry==nil){
-            entry = [[UIImageBatchLoadEntry alloc] init];
+            entry = [[AFUIImageBatchLoadEntry alloc] init];
             [imageLoadManager.poolDictionary setObject:entry forKey:path];
         }
         entry.requestId =requestId;
@@ -166,8 +166,8 @@ static NSObject *lock;
 
 +(void)removeLoadPath:(NSString *)path token:(NSString *)token{
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
-        UIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadEntry *entry=[imageLoadManager.poolDictionary objectForKey:path];
         if(entry!=nil){
             [entry.imagesTokens removeObject:token];
             
@@ -182,7 +182,7 @@ static NSObject *lock;
 
 + (void)removeAllLoad:(NSString *)path{
     @synchronized(lock){
-        UIImageBatchLoadingManager *imageLoadManager=[UIImageBatchLoadingManager shareInstance];
+        AFUIImageBatchLoadingManager *imageLoadManager=[AFUIImageBatchLoadingManager shareInstance];
         [imageLoadManager.poolDictionary removeObjectForKey:path];
     }
 }
@@ -197,20 +197,20 @@ static NSObject *lock;
     __block NSInteger blockQueueId = queueId;
     __block BOOL      blockLocal = local;
     
-    __block UIImageBatchLoadingManager *weakSelf = self;
+    __block AFUIImageBatchLoadingManager *weakSelf = self;
     
-    [UIImageBatchLoadingManager addWaitPath:blockResourcePath token:blockToken];
+    [AFUIImageBatchLoadingManager addWaitPath:blockResourcePath token:blockToken];
     
     dispatch_async(image_process_queue, ^{
         @autoreleasepool {
             @try {
                 
-                if(![UIImageBatchLoadingManager isWaiting:blockResourcePath]){
+                if(![AFUIImageBatchLoadingManager isWaiting:blockResourcePath]){
                     return;
                 }
                 
                 
-                [UIImageBatchLoadingManager removeWait:blockResourcePath token:blockToken];
+                [AFUIImageBatchLoadingManager removeWait:blockResourcePath token:blockToken];
                 
                 if(blockLocal){
                     // TODO: 处理本地图片，
@@ -220,8 +220,8 @@ static NSObject *lock;
                     
                     
                     //TODO 检查队列
-                    if([UIImageBatchLoadingManager isDownloading:blockResourcePath]){
-                        [UIImageBatchLoadingManager addLoadPath:blockResourcePath token:blockToken];
+                    if([AFUIImageBatchLoadingManager isDownloading:blockResourcePath]){
+                        [AFUIImageBatchLoadingManager addLoadPath:blockResourcePath token:blockToken];
                         return;
                     }
                     
@@ -250,7 +250,7 @@ static NSObject *lock;
                     
 #endif
                     //添加到队列中
-                    [UIImageBatchLoadingManager addLoadPath:blockResourcePath  token:blockToken queue:blockQueueId requestId:downloadRequest.requestId];
+                    [AFUIImageBatchLoadingManager addLoadPath:blockResourcePath  token:blockToken queue:blockQueueId requestId:downloadRequest.requestId];
                     
                     //            LOG_DEBUG(@"-----self:%@ ",self);
                     
@@ -274,7 +274,7 @@ static NSObject *lock;
                             NSLog(@"%@",[[exception callStackSymbols] componentsJoinedByString:@"\n"]);
 #endif
                         }@finally {
-                            [UIImageBatchLoadingManager removeAllLoad:blockResourcePath];
+                            [AFUIImageBatchLoadingManager removeAllLoad:blockResourcePath];
                         }
                     }];
                     
@@ -306,11 +306,11 @@ static NSObject *lock;
             if(image){
                 //TODO notication
                 //                dispatch_manager_load_image_main_sync_undeadlock_fun(^{
-                UIImageLoadedEntry *loadedEntry =[[UIImageLoadedEntry alloc] init];
+                AFUIImageLoadedEntry *loadedEntry =[[AFUIImageLoadedEntry alloc] init];
                 loadedEntry.imagePath =[[NSString alloc] initWithString:imagePath];
                 loadedEntry.image =image;
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:kDYUIImageViewLoadedImageNotification object:loadedEntry];
+                [[NSNotificationCenter defaultCenter] postNotificationName:kAFDYUIImageViewLoadedImageNotification object:loadedEntry];
                 //                });
                 
                 
@@ -325,11 +325,11 @@ static NSObject *lock;
                     }
                     //TODO notication
                     //                    dispatch_manager_load_image_main_sync_undeadlock_fun(^{
-                    UIImageLoadedEntry *loadedEntry =[[UIImageLoadedEntry alloc] init];
+                    AFUIImageLoadedEntry *loadedEntry =[[AFUIImageLoadedEntry alloc] init];
                     loadedEntry.imagePath =[[NSString alloc] initWithString:imagePath];
                     loadedEntry.image =showImage;
                     
-                    [[NSNotificationCenter defaultCenter] postNotificationName:kDYUIImageViewLoadedImageNotification object:loadedEntry];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:kAFDYUIImageViewLoadedImageNotification object:loadedEntry];
                     //                    });
                 }
             }
@@ -344,8 +344,8 @@ static NSObject *lock;
 }
 
 -(void)stopLoad:(NSString *)resourcePath token:(NSString *)token{
-    [UIImageBatchLoadingManager removeWait:resourcePath token:token];
-    [UIImageBatchLoadingManager removeLoadPath:resourcePath token:token];
+    [AFUIImageBatchLoadingManager removeWait:resourcePath token:token];
+    [AFUIImageBatchLoadingManager removeLoadPath:resourcePath token:token];
 }
 
 @end

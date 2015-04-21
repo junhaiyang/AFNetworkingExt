@@ -10,13 +10,6 @@
 
 NSString *const kAFDYUIImageViewLoadedImageNotification       = @"kDYUIImageViewLoadedImageNotification";
 
-void dispatch_manager_load_image_main_sync_undeadlock_fun(dispatch_block_t block){
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
 
 @implementation AFUIImageLoadedEntry
 

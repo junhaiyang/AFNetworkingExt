@@ -32,6 +32,9 @@ Podfile
         	self.responseType =ResponseProtocolTypeFile; //文件下载
         	self.responseType =ResponseProtocolTypeJSON; //返回JSON
         	self.responseType =ResponseProtocolTypeNormal; //返回普通文本
+        	
+        	self.requestType =RequestProtocolTypeNormal; //默认请求
+        	self.requestType =RequestProtocolTypeJSON; //JSON body 请求 
         
     	}
    	 	return self;
@@ -79,7 +82,7 @@ Podfile
 
 	}];
 
-	[request completionBlock:^(AFNetworkingBaseRequest *request, NSInteger statusCode) {
+	[request finishedBlock:^(AFNetworkingBaseRequest *request, StatusCode errorCode, NSInteger httpStatusCode) {
     NSLog(@"-----------completionBlock");
 	}];
 

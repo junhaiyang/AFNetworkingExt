@@ -8,12 +8,12 @@
 Podfile
 如果无法编译，指定下面依赖版本
 	
-	pod 'AFNetworking', '~> 2.3.1'
-	pod 'AFNetworkActivityLogger', '~> 2.0.3'
+	pod 'AFNetworking', '~> 2.5.3'
+	pod 'AFNetworkActivityLogger', '~> 2.0.4'
 	pod 'AFOnoResponseSerializer', '~> 1.0.0'
-	pod 'AFgzipRequestSerializer', '~> 0.0.1'
-	pod 'Ono', '~> 1.1.1'
-	pod 'Godzippa', '~> 1.0.0'
+	pod 'AFgzipRequestSerializer', '~> 0.0.2'
+	pod 'Ono', '~> 1.2.1'
+	pod 'Godzippa', '~> 1.1.0'
 
 创建
 

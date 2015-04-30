@@ -50,16 +50,7 @@ Pod::Spec.new do |s|
     ds.source_files = 'AFTextResponseSerializer/*.{h,m,mm}' 
     		  
   end
-  
-  
-  s.subspec 'example' do |ds|
     
-    ds.dependency 'AFNetworking+Ext/Base'
-    ds.source_files = '*.{h,m,mm}' 
-    		 
-  end
-  
-  
   s.subspec 'UIKit' do |ks|
      
      ks.subspec 'UIImageView+DYLoading' do |ds|

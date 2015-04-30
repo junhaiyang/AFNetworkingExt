@@ -24,6 +24,36 @@ typedef NS_ENUM(NSInteger, ResponseProtocolType) {
     ResponseProtocolTypeXML,               //响应协议类型，发XML格式符串流方式
     // todo other
 };
+typedef NS_ENUM(NSInteger, RequestProtocolType) {
+    RequestProtocolTypeNormal = 0,       //请求协议类型，标准提交
+    RequestProtocolTypeJSON,              //请求协议类型，发JSON格式提交
+    // todo other
+} NS_AVAILABLE_IOS(5_0);
 
+
+
+#import <Foundation/Foundation.h>
+
+@interface AFNetworkingHttpContants : NSObject
+
+
+/**
+ *
+ * Authorization 认证机制
+ *
+ **/
+
++ (void)setAuthorizationHeaderFieldWithUsername:(NSString *)username
+                                       password:(NSString *)password  NS_AVAILABLE_IOS(5_0);
+
++ (void)clearAuthorizationHeader  NS_AVAILABLE_IOS(5_0);
+
++ (NSString *)authorizationHeaderFieldWithUsername  NS_AVAILABLE_IOS(5_0);
++ (NSString *)authorizationHeaderFieldWithPassword  NS_AVAILABLE_IOS(5_0);
+
++ (BOOL)containsAuthorizationHeaderField  NS_AVAILABLE_IOS(5_0);
+
+@end
+ 
 
 #endif

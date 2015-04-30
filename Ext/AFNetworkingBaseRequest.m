@@ -11,17 +11,23 @@
 }
 
 @property (nonatomic,strong) AFNetworkingCompletionBlock networkingCompletionBlock;
+@property (nonatomic,strong) AFNetworkingFinishedBlock networkingFinishedBlock;
 @property (nonatomic,strong) AFNetworkingDownloadBlock networkingDownloadBlock;
 @property (nonatomic,strong) AFNetworkingUploadBlock networkingUploadBlock;
 
+
+
 @property (nonatomic,assign) BOOL asyncwork;
+@property (nonatomic,assign) BOOL queueExecute;
 
 @property (nonatomic,assign,readwrite) NSInteger requestId;
-@property (nonatomic,strong,readwrite) NSString *managerKey;
+@property (nonatomic,strong,readwrite) NSString *managerKey; 
 
 @end
 
 @implementation AFNetworkingBaseRequest
+
+@synthesize operation;
 
 -(void)dealloc{
     self.networkingUploadBlock =nil;
@@ -37,6 +43,7 @@ static int indexNumber =0;
     if (self) { 
         self.responseType = ResponseProtocolTypeJSON;
         self.asyncwork  = NO;
+        self.queueExecute = YES;
         indexNumber++;
         self.requestId=indexNumber;
     }
@@ -47,6 +54,9 @@ static int indexNumber =0;
 -(void)completionBlock:(AFNetworkingCompletionBlock)completionBlock{
     self.networkingCompletionBlock =completionBlock;
 }
+-(void)finishedBlock:(AFNetworkingFinishedBlock)finishedBlock{
+    self.networkingFinishedBlock =finishedBlock;
+}
 -(void)downloadBlock:(AFNetworkingDownloadBlock)downloadBlock{
     self.networkingDownloadBlock =downloadBlock;
 }
@@ -55,6 +65,7 @@ static int indexNumber =0;
 }
 -(void)executeSync{
     self.managerKey =[NSString stringWithFormat:@"queue-%d-sync",(int)self.responseType];
+    self.queueExecute = NO;
     self.asyncwork  = NO;
     [self prepareRequest];
 }
@@ -71,155 +82,103 @@ static int indexNumber =0;
 }
 
 
+-(void)executeAsyncWithoutQueue{
+    self.queueExecute = NO;
+    [self prepareRequest];
+}
 
 
 #pragma mark
 #pragma mark - build 
 
 -(void)buildPostRequest:(NSString *)urlString body:(NSData *)body {
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    self.requestType =RequestProtocolTypeNormal;
     
-    manager.responseSerializer = [self getAFHTTPResponseSerializer];
-    
-    __block AFNetworkingBaseRequest *weakSelf = self;
-    
-    operation = (AFCustomRequestOperation *)[manager POST:urlString body:body success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [weakSelf processResult:responseObject];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-#if DEBUG
-        NSLog(@"failure:%@",error);
-#endif
-        if(weakSelf.networkingCompletionBlock){
-            weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
-        }
-    }];
-    
-    
-    [self processBlock];
-    
+    [self buildRequest:urlString method:kAFNetworking_HTTP_POST body:body];
     
 }
 
 
 -(void)buildPostRequest:(NSString *)urlString form:(NSDictionary *)form{
     
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    [self buildRequest:urlString method:kAFNetworking_HTTP_POST parameters:form];
     
-    manager.responseSerializer = [self getAFHTTPResponseSerializer];
-    
-    __block AFNetworkingBaseRequest *weakSelf = self;
-    
-    operation = (AFCustomRequestOperation *)[manager POST:urlString parameters:form success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [weakSelf processResult:responseObject];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-#if DEBUG
-        NSLog(@"failure:%@",error);
-#endif
-        if(weakSelf.networkingCompletionBlock){
-                weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
-        }
-    }];
-    
-    
-    [self processBlock];
 }
 
 -(void)buildPostFileRequest:(NSString *)urlString files:(NSDictionary *)files{
     
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    self.requestType =RequestProtocolTypeNormal;
     
-    manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    [self buildRequest:urlString method:kAFNetworking_HTTP_POST parameters:nil files:files];
     
-    __block AFNetworkingBaseRequest *weakSelf = self;
-    
-    operation = (AFCustomRequestOperation *)[manager POST:urlString parameters:nil constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-        
-        for (NSString *key  in files) {
-            NSString *filePath =[files objectForKey:key];
-            [formData appendPartWithFileURL:[NSURL fileURLWithPath:filePath] name:key error:NULL];
-        }
-    } success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [weakSelf processResult:responseObject];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-#if DEBUG
-        NSLog(@"failure:%@",error);
-#endif
-        if(weakSelf.networkingCompletionBlock){
-            weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
-        }
-    }];
-    
-    
-    [self processBlock];
 }
 
 -(void)buildPostFileRequest:(NSString *)urlString files:(NSDictionary *)files form:(NSDictionary *)form{
     
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    self.requestType =RequestProtocolTypeNormal;
     
-    manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    [self buildRequest:urlString method:kAFNetworking_HTTP_POST parameters:form files:files];
     
-    __block AFNetworkingBaseRequest *weakSelf = self;
-    
-    operation = (AFCustomRequestOperation *)[manager POST:urlString parameters:form constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
-        
-        for (NSString *key  in files) {
-            NSString *filePath =[files objectForKey:key];
-            [formData appendPartWithFileURL:[NSURL fileURLWithPath:filePath] name:key error:NULL];
-        }
-    } success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [weakSelf processResult:responseObject];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-#if DEBUG
-        NSLog(@"failure:%@",error);
-#endif
-        if(weakSelf.networkingCompletionBlock){
-            weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
-        }
-    }];
-    
-    
-    [self processBlock];
 }
 
 -(void)buildGetRequest:(NSString *)urlString form:(NSDictionary *)form{
     
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
     
-    manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    [self buildRequest:urlString method:kAFNetworking_HTTP_GET parameters:form];
     
-    __block AFNetworkingBaseRequest *weakSelf = self;
-    
-    operation = (AFCustomRequestOperation *)[manager GET:urlString parameters:form success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [weakSelf processResult:responseObject];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-#if DEBUG
-        NSLog(@"failure:%@",error);
-#endif
-        if(weakSelf.networkingCompletionBlock){
-            weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
-        }
-    }];
-    
-    
-    [self processBlock];
 }
 
 -(void)buildGetRequest:(NSString *)urlString{
     
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    [self buildRequest:urlString method:kAFNetworking_HTTP_GET parameters:nil];
+    
+}
+
+-(void)buildDeleteRequest:(NSString *)urlString{
+    
+    [self buildRequest:urlString method:kAFNetworking_HTTP_DELETE parameters:nil];
+    
+}
+
+-(AFCustomRequestOperationManager *)getManager{
+    AFCustomRequestOperationManager *manager;
+    if(self.queueExecute){
+         manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+        
+    }else{
+        
+        if (self.responseType == ResponseProtocolTypeFile){
+            manager =  [AFDownloadRequestOperationManager manager];
+        }else{ 
+            manager =  [AFCustomRequestOperationManager manager];
+        }
+        
+    }
+    
+    return manager;
+}
+
+
+-(void)buildRequest:(NSString *)urlString method:(NSString *)method parameters:(NSDictionary *)parameters{
+    
+    AFCustomRequestOperationManager *manager = [self getManager];
     
     manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    manager.requestSerializer = [self getAFHTTPRequestSerializer];
     
     __block AFNetworkingBaseRequest *weakSelf = self;
-
-    operation = (AFCustomRequestOperation *)[manager GET:urlString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    
+    operation =  (AFCustomRequestOperation *)[manager request:urlString method:method parameters:parameters delegate:self  success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
         [weakSelf processResult:responseObject];
+        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
 #if DEBUG
         NSLog(@"failure:%@",error);
 #endif
-        if(weakSelf.networkingCompletionBlock){
+        if(weakSelf.networkingFinishedBlock){
+            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.response.statusCode);
+        }else if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
     }];
@@ -227,27 +186,62 @@ static int indexNumber =0;
     [self processBlock];
 }
 
--(void)buildDeleteRequest:(NSString *)urlString{
+-(void)buildRequest:(NSString *)urlString method:(NSString *)method body:(NSData *)body{
     
-    AFCustomRequestOperationManager *manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
+    AFCustomRequestOperationManager *manager = [self getManager];
     
     manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    manager.requestSerializer = [self getAFHTTPRequestSerializer];
     
     __block AFNetworkingBaseRequest *weakSelf = self;
     
-    operation = (AFCustomRequestOperation *)[manager DELETE:urlString parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    operation =  (AFCustomRequestOperation *)[manager request:urlString method:method body:body delegate:self  success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
         [weakSelf processResult:responseObject];
+        
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
 #if DEBUG
-        NSLog(@"响应失败:%@",error);
+        NSLog(@"failure:%@",error);
 #endif
-        if(weakSelf.networkingCompletionBlock){
+        if(weakSelf.networkingFinishedBlock){
+            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.response.statusCode);
+        }else if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
     }];
     
     [self processBlock];
+}
+
+-(void)buildRequest:(NSString *)urlString method:(NSString *)method parameters:(NSDictionary *)parameters files:(NSDictionary *)files {
     
+    AFCustomRequestOperationManager *manager = [self getManager];
+    
+    manager.responseSerializer = [self getAFHTTPResponseSerializer];
+    manager.requestSerializer = [self getAFHTTPRequestSerializer];
+    
+    __block AFNetworkingBaseRequest *weakSelf = self;
+    
+    operation =  (AFCustomRequestOperation *)[manager request:urlString method:method parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        for (NSString *key  in files) {
+            NSString *filePath =[files objectForKey:key];
+            [formData appendPartWithFileURL:[NSURL fileURLWithPath:filePath] name:key error:NULL];
+        }
+    } delegate:self  success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        [weakSelf processResult:responseObject];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#if DEBUG
+        NSLog(@"failure:%@",error);
+#endif
+        if(weakSelf.networkingFinishedBlock){
+            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.response.statusCode);
+        }else if(weakSelf.networkingCompletionBlock){
+            weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
+        }
+    }];
+    
+    [self processBlock];
 }
 
 
@@ -262,7 +256,9 @@ static int indexNumber =0;
         }else{
             [self processDictionary:responseObject];
         }
-        if(self.networkingCompletionBlock){
+        if(self.networkingFinishedBlock){
+            self.networkingFinishedBlock(self,StatusCodeSuccess,self.operation.statusCode);
+        }else if(self.networkingCompletionBlock){
             self.networkingCompletionBlock(self,StatusCodeSuccess);
         }
     }
@@ -270,7 +266,9 @@ static int indexNumber =0;
 #if DEBUG
         NSLog(@"处理结果失败:%@",exception);
 #endif
-        if(self.networkingCompletionBlock){
+        if(self.networkingFinishedBlock){
+            self.networkingFinishedBlock(self,StatusCodeProcessError,self.operation.statusCode);
+        }else if(self.networkingCompletionBlock){
             self.networkingCompletionBlock(self,StatusCodeProcessError);
         }
     } 
@@ -322,6 +320,24 @@ static int indexNumber =0;
     
     return responseSerializer;
 }
+
+-(AFHTTPRequestSerializer *)getAFHTTPRequestSerializer{
+    AFHTTPRequestSerializer *requestSerializer;
+     if(self.requestType==RequestProtocolTypeJSON){
+        requestSerializer= [AFJSONRequestSerializer serializer];
+         //去掉所有限制
+//         requestSerializer.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:nil, nil];
+    } else {
+        requestSerializer= [AFHTTPRequestSerializer serializer];
+    }
+    
+    if([AFNetworkingHttpContants containsAuthorizationHeaderField]){
+        [requestSerializer setAuthorizationHeaderFieldWithUsername:[AFNetworkingHttpContants authorizationHeaderFieldWithUsername] password:[AFNetworkingHttpContants authorizationHeaderFieldWithPassword]]; 
+    }
+    
+    return requestSerializer;
+}
+
 
 -(void)cancel{
     [operation cancel];

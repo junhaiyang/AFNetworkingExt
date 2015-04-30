@@ -21,20 +21,17 @@
     self = [super init];
     if (self) {
 //        self.responseType =ResponseProtocolTypeFile;
-        self.responseType =ResponseProtocolTypeJSON;
+//        self.responseType =ResponseProtocolTypeJSON;
         self.responseType =ResponseProtocolTypeNormal;
+        self.requestType = RequestProtocolTypeJSON;
         
     }
     return self;
 }
 
 -(void)prepareRequest{
-    
-    NSString *url = [PROTOCOL_URL stringByAppendingString:POST_FILE_URL];
-    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
-    [dictionary setObject:@"121212123123" forKey:@"account"];
-    [dictionary setObject:@"111111" forKey:@"passwd"];
-    [self buildGetRequest:url form:dictionary];
+     
+    [self buildGetRequest:PROTOCOL_URL];
     
 }
 

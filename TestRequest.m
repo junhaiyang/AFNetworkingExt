@@ -36,7 +36,7 @@
 }
 
 -(void)processString:(NSString *)str{
-    NSLog(@"processString:%@", str);
+//    NSLog(@"processString:%@", str);
     
 }
 

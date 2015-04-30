@@ -39,7 +39,7 @@
 
 typedef void(^AFNetworkingCompletionBlock)(AFNetworkingBaseRequest *request, NSInteger statusCode)  NS_DEPRECATED_IOS(2_0, 5_0, "AFNetworkingFinishedBlock instead!");
 
-typedef void(^AFNetworkingFinishedBlock)(AFNetworkingBaseRequest *request, NSInteger errorCode, NSInteger statusCode)  NS_AVAILABLE_IOS(5_0);  //请求协议类型
+typedef void(^AFNetworkingFinishedBlock)(AFNetworkingBaseRequest *request, StatusCode errorCode, NSInteger httpStatusCode)  NS_AVAILABLE_IOS(5_0);  //请求协议类型
 
 typedef void(^AFNetworkingDownloadBlock)(long long totalBytesRead, long long totalBytesExpectedToRead);
 typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long totalBytesExpectedToWrite);

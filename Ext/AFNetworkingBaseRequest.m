@@ -177,7 +177,7 @@ static int indexNumber =0;
         NSLog(@"failure:%@",error);
 #endif
         if(weakSelf.networkingFinishedBlock){
-            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.response.statusCode);
+            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.statusCode);
         }else if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -204,7 +204,7 @@ static int indexNumber =0;
         NSLog(@"failure:%@",error);
 #endif
         if(weakSelf.networkingFinishedBlock){
-            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.response.statusCode);
+            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.statusCode);
         }else if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }
@@ -235,7 +235,7 @@ static int indexNumber =0;
         NSLog(@"failure:%@",error);
 #endif
         if(weakSelf.networkingFinishedBlock){
-            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.response.statusCode);
+            weakSelf.networkingFinishedBlock(weakSelf,StatusCodeHttpError,weakSelf.operation.statusCode);
         }else if(weakSelf.networkingCompletionBlock){
             weakSelf.networkingCompletionBlock(weakSelf,StatusCodeHttpError);
         }

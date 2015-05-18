@@ -28,26 +28,42 @@
     return [AFImageResponseSerializer serializer];
 }
 
--(void)processFile:(NSString *)_filePath{
+-(void)processFile:(NSObject *)_filePath{
     if(![self isHttpSuccess]){
-        NSFileManager *manager=[NSFileManager defaultManager];
-        if([manager fileExistsAtPath:_filePath]){
-            NSError *error;
-            [manager removeItemAtPath:_filePath error:&error];
-            if(error){
-                NSLog(@"%@",error);
-            }
-        }
-        return;
-    }
+        
+        
+        if([_filePath isKindOfClass:[NSString class]]){
+            
             NSFileManager *manager=[NSFileManager defaultManager];
-            if([manager fileExistsAtPath:_filePath]){
+            if([manager fileExistsAtPath:(NSString *)_filePath]){
                 NSError *error;
-                [manager moveItemAtPath:_filePath toPath:self.filePath error:&error];
+                [manager removeItemAtPath:(NSString *)_filePath error:&error];
                 if(error){
                     NSLog(@"%@",error);
                 }
             }
+        }
+        return;
+    }
+    
+    
+    if([_filePath isKindOfClass:[NSString class]]){
+        NSFileManager *manager=[NSFileManager defaultManager];
+        if([manager fileExistsAtPath:(NSString *)_filePath]){
+            NSError *error;
+            [manager moveItemAtPath:(NSString *)_filePath toPath:self.filePath error:&error];
+            if(error){
+                NSLog(@"%@",error);
+            }
+        }
+    }else if ([_filePath isKindOfClass:[UIImage class]]){
+        NSData *dataObj = UIImagePNGRepresentation((UIImage *)_filePath);
+        [dataObj writeToFile:self.filePath atomically:NO];
+    }
+    
+    
+    
+    
 }
 
 @end

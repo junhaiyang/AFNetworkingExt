@@ -16,17 +16,19 @@ static dispatch_queue_t download_request_operation_completion_queue() {
 }
  
 @implementation AFDownloadRequestOperationManager
+ 
 
 - (AFHTTPRequestOperation *)HTTPRequestOperationWithRequest:(NSURLRequest *)request
+                                                   delegate:(id<AFNetworkingRequestDelegate>)delegate
                                                     success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
                                                     failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
     AFDownloadRequestOperation *operation = [[AFDownloadRequestOperation alloc] initWithRequest:request shouldResume:NO];
+    delegate.operation = operation;
     operation.responseSerializer = self.responseSerializer;
     operation.shouldUseCredentialStorage = self.shouldUseCredentialStorage;
     operation.credential = self.credential;
     operation.securityPolicy = self.securityPolicy;
-    
     
     if(!self.asyncwork)
         operation.completionQueue = download_request_operation_completion_queue();

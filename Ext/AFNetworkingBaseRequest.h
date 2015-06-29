@@ -106,7 +106,8 @@ typedef void(^AFNetworkingUploadBlock)(long long  totalBytesWritten, long long t
 
 -(void)buildGetRequest:(NSString *)urlString form:(NSDictionary *)form;
 -(void)buildGetRequest:(NSString *)urlString;                                      //GET请求
--(void)buildDeleteRequest:(NSString *)urlString;                                   //DELETE请求
+-(void)buildDeleteRequest:(NSString *)urlString NS_AVAILABLE_IOS(5_0);             //DELETE请求
+-(void)buildDeleteRequest:(NSString *)urlString form:(NSDictionary *)form NS_AVAILABLE_IOS(5_0);
 
 /**
  *

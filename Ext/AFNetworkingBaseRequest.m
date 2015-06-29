@@ -139,6 +139,9 @@ static int indexNumber =0;
     [self buildRequest:urlString method:kAFNetworking_HTTP_DELETE parameters:nil];
     
 }
+-(void)buildDeleteRequest:(NSString *)urlString form:(NSDictionary *)form{
+    [self buildRequest:urlString method:kAFNetworking_HTTP_DELETE parameters:form];
+}
 
 -(AFCustomRequestOperationManager *)getManager{
     AFCustomRequestOperationManager *manager;

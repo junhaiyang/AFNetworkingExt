@@ -13,6 +13,8 @@
 
 +(AFNetworkHttpRequestManager *)shareManager;
 
++(AFCustomRequestOperationManager *)getAFHTTPRequestOperationManager:(ResponseProtocolType)responseType;
+
 +(AFCustomRequestOperationManager *)loadManagerStr:(NSString *)managerKey responseType:(ResponseProtocolType)responseType asyncwork:(BOOL)asyncwork;
 
 +(void)cancelQueue:(NSInteger)queueId;

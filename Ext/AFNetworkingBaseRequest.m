@@ -146,15 +146,12 @@ static int indexNumber =0;
 -(AFCustomRequestOperationManager *)getManager{
     AFCustomRequestOperationManager *manager;
     if(self.queueExecute){
+        
          manager = [AFNetworkHttpRequestManager loadManagerStr:self.managerKey responseType:self.responseType asyncwork:self.asyncwork];
         
     }else{
         
-        if (self.responseType == ResponseProtocolTypeFile){
-            manager =  [AFDownloadRequestOperationManager manager];
-        }else{ 
-            manager =  [AFCustomRequestOperationManager manager];
-        }
+        manager =[AFNetworkHttpRequestManager getAFHTTPRequestOperationManager:self.responseType];
         
     }
     

@@ -1,3 +1,8 @@
+
+All Code Will  @DEPRECATED@
+
+
+
 初始目的：
 
 	不要过多的关心网络协议底层

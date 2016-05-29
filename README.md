@@ -1,5 +1,4 @@
-
-All Code Will  @DEPRECATED@
+@DEPRECATED 使用 https://github.com/junhaiyang/AFNetworkingTask
 
 
 
